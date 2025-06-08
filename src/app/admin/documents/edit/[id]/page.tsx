@@ -12,6 +12,7 @@ import { MdOutlineChevronLeft } from 'react-icons/md'
 import { AiOutlineLoading } from 'react-icons/ai'
 import { useRouter } from 'next/navigation'
 import _ from 'lodash'
+import dynamic from 'next/dynamic'
 
 import { Switch } from '@/modules/shared/components/ui/switch'
 import { Textarea } from '@/modules/shared/components/ui/textarea'
@@ -27,7 +28,12 @@ import { Button } from '@/modules/shared/components/ui/button'
 import { documentSchema } from '@/modules/admin/schemas/documents-schema'
 import { useSendRequest } from '@/modules/shared/hooks/use-send-request'
 import { BACKEND_URL } from '@/lib/constants'
-import PdfViewer from '@/modules/shared/components/viewer'
+const PdfViewer = dynamic(
+  () => import('@/modules/shared/components/pdf-viewer'),
+  {
+    ssr: false,
+  },
+)
 import { useGetData } from '@/modules/shared/hooks/use-get-data'
 import { Doc } from '@/modules/admin/types/documents.types'
 

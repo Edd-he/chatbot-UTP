@@ -36,7 +36,7 @@ export default async function Page({ searchParams }: Props) {
         </div>
         <Button asChild>
           <Link
-            href={'/admin/documents/create'}
+            href={'/admin/topics/create'}
             className="max-sm:w-full flex gap-2 "
           >
             <IoAddCircleOutline size={22} /> Agregar Tópico
