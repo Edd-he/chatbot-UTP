@@ -21,7 +21,7 @@ export default function PdfViewer({ className = '', url }: Props) {
   }
 
   return (
-    <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.js">
+    <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.js">
       <div className={`${className} w-full`}>
         <Viewer
           scrollMode={ScrollMode.Page}
