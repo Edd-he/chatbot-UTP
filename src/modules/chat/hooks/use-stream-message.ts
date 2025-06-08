@@ -1,4 +1,3 @@
-/* eslint-disable no-empty */
 import { useState, useCallback } from 'react'
 
 export function useStreamMessage(url: string) {
@@ -48,7 +47,9 @@ export function useStreamMessage(url: string) {
               setError(parsedErrorChunk.message)
               break
             }
-          } catch {}
+          } catch {
+            /*No hacer catch en caso venga un chunk de error */
+          }
           setText((prev) => prev + chunk)
         }
       } catch (e: unknown) {
@@ -57,7 +58,7 @@ export function useStreamMessage(url: string) {
         setLoading(false)
       }
     },
-    [url]
+    [url],
   )
 
   return {

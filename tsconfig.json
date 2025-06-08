@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -21,6 +21,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@admin/*": ["./src/modules/admin/*"],
+      "@auth/*": ["./src/modules/auth/*"],
       "@chat/*": ["./src/modules/chat/*"],
       "@shared/*": ["./src/modules/shared/*"]
     }
