@@ -17,6 +17,8 @@ import { Button } from '@shared/components/ui/button'
 import { Switch } from '@shared/components/ui/switch'
 import { useRouter } from 'next/navigation'
 import { AiOutlineLoading } from 'react-icons/ai'
+import Link from 'next/link'
+import { MdOutlineChevronLeft } from 'react-icons/md'
 
 import { topicSchema } from '@/modules/admin/schemas/topics-schema'
 import { useSendRequest } from '@/modules/shared/hooks/use-send-request'
@@ -59,11 +61,22 @@ export default function Page() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto w-full">
-      <Card>
+    <>
+      <section className="max-w-3xl w-full mx-auto flex items-center justify-start gap-5">
+        <Button asChild variant={'outline'} size={'icon'}>
+          <Link href={'/admin/topics'}>
+            <MdOutlineChevronLeft size={25} />
+          </Link>
+        </Button>
+
+        <h1 className="text-3xl">Nuevo Tópico</h1>
+      </section>
+      <Card className="max-w-3xl mx-auto w-full">
         <CardHeader>
-          <CardTitle>Crear Nuevo Tópico</CardTitle>
-          <CardDescription>Crear un nuevo topico</CardDescription>
+          <CardTitle>Información del Tópico</CardTitle>
+          <CardDescription>
+            Completa los campos para describir tu tópico.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
@@ -134,6 +147,6 @@ export default function Page() {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </>
   )
 }

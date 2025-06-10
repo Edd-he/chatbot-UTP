@@ -17,7 +17,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@shared/components/ui/sidebar'
-import { BiChevronDown } from 'react-icons/bi'
+import { BiChevronRight } from 'react-icons/bi'
 
 import {
   Collapsible,
@@ -66,13 +66,16 @@ export function NavMain({ links }: Props) {
         ))}
         <Collapsible>
           <SidebarMenuItem>
-            <CollapsibleTrigger asChild>
-              <SidebarMenuButton className="[&>svg]:size-6 group-data-[collapsible=icon]:[&>svg]:mx-4 [&>svg]:mx-2 h-12 duration-200">
+            <SidebarMenuButton
+              asChild
+              className="relative [&>svg]:size-6 group-data-[collapsible=icon]:[&>svg]:mx-4 [&>svg]:mx-2 h-12 duration-200"
+            >
+              <CollapsibleTrigger className="[&[data-state=open]>svg]:rotate-90">
                 <RiGeminiLine />
                 Gemini
-                <BiChevronDown size={2} className="ml-6" />
-              </SidebarMenuButton>
-            </CollapsibleTrigger>
+                <BiChevronRight className="!size-4 !ml-18 duration-200 transition-transform" />
+              </CollapsibleTrigger>
+            </SidebarMenuButton>
           </SidebarMenuItem>
           <CollapsibleContent>
             <SidebarMenuSub>

@@ -16,7 +16,7 @@ export default function CloseSessionButton({
   className,
 }: Props) {
   const handleCloseSession = async () => {
-    await signOut({ redirect: true, callbackUrl: '/login' })
+    await signOut({ redirect: true, callbackUrl: '/auth' })
   }
 
   return (
@@ -24,7 +24,7 @@ export default function CloseSessionButton({
       <button
         onClick={handleCloseSession}
         className={cn(
-          'flex-center duration-200 p-2 rounded gap-2 hover:bg-secondary active:bg-pressed',
+          'flex-center duration-200 p-2 rounded gap-2 hover:bg-secondary cursor-pointer',
           className,
         )}
       >

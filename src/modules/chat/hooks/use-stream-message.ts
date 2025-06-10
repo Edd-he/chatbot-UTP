@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 
 export function useStreamMessage(url: string) {
   const [text, setText] = useState('')
+  const [finalText, setFinalText] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -35,7 +36,6 @@ export function useStreamMessage(url: string) {
 
         const reader = res.body.getReader()
         const decoder = new TextDecoder('utf-8')
-
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
@@ -52,6 +52,7 @@ export function useStreamMessage(url: string) {
           }
           setText((prev) => prev + chunk)
         }
+        setFinalText(text)
       } catch (e: unknown) {
         if (e instanceof Error) setError(e.message || 'Error desconocido')
       } finally {
@@ -63,6 +64,7 @@ export function useStreamMessage(url: string) {
 
   return {
     text,
+    finalText,
     error,
     loading,
     startStream,

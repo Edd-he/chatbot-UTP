@@ -19,6 +19,8 @@ import { useRouter } from 'next/navigation'
 import { AiOutlineLoading } from 'react-icons/ai'
 import { use, useEffect } from 'react'
 import _ from 'lodash'
+import { MdOutlineChevronLeft } from 'react-icons/md'
+import Link from 'next/link'
 
 import { topicSchema } from '@/modules/admin/schemas/topics-schema'
 import { useSendRequest } from '@/modules/shared/hooks/use-send-request'
@@ -91,13 +93,21 @@ export default function Page({ params }: Props) {
     if (topic) reset(topic)
   }, [topic, reset])
   return (
-    <div className="max-w-3xl mx-auto w-full">
-      <Card>
+    <>
+      <section className=" max-w-3xl w-full mx-auto flex items-center justify-start gap-5">
+        <Button asChild variant={'outline'} size={'icon'}>
+          <Link href={'/admin/topics'}>
+            <MdOutlineChevronLeft size={25} />
+          </Link>
+        </Button>
+
+        <h1 className="text-3xl">Editar Tópico</h1>
+      </section>
+      <Card className="max-w-3xl mx-auto w-full">
         <CardHeader>
-          <CardTitle>Editar Tópico</CardTitle>
+          <CardTitle>Información del Tópico</CardTitle>
           <CardDescription>
-            Completa el formulario para agregar un nuevo tópico a la base de
-            datos.
+            Completa los campos para describir tu tópico.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -173,7 +183,7 @@ export default function Page({ params }: Props) {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </>
   )
 }
 

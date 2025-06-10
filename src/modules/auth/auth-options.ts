@@ -26,7 +26,6 @@ export const authOptions: NextAuthOptions = {
             console.error('Error en autenticación:', await res.text())
             return null
           }
-
           const user = await res.json()
           return user
         } catch (error) {
@@ -36,9 +35,9 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  // pages: {
-  //   signIn: '/auth/login',
-  // },
+  pages: {
+    signIn: '/auth',
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) return { ...token, ...user }
@@ -46,7 +45,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       session.user = token.user
-      session.Tokens = token.Tokens
+      session.tokens = token.tokens
       return session
     },
   },

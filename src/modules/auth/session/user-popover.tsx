@@ -27,7 +27,7 @@ export default function UserPopover() {
                 className="animate-spin ease-in-out"
               />
             ) : session?.user ? (
-              session.user.name
+              session.user.username
             ) : (
               ''
             )}
@@ -35,7 +35,7 @@ export default function UserPopover() {
         </PopoverTrigger>
         <PopoverContent
           align="end"
-          className="flex flex-col gap-1 items-start text-sm w-auto"
+          className="flex flex-col gap-1 items-start text-sm w-auto p-1"
         >
           <CloseSessionButton iconSize={18} label="Cerrar Sesión" />
         </PopoverContent>
