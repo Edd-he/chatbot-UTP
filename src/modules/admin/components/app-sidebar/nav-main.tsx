@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-vars */
 'use client'
 
 import { IconType } from 'react-icons'
@@ -7,6 +5,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { RiGeminiLine } from 'react-icons/ri'
+import { BiChevronRight } from 'react-icons/bi'
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -17,7 +16,6 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@shared/components/ui/sidebar'
-import { BiChevronRight } from 'react-icons/bi'
 
 import {
   Collapsible,
@@ -36,22 +34,20 @@ type Props = {
 export function NavMain({ links }: Props) {
   const pathname = usePathname()
   const [activeIndex, setActiveIndex] = useState(0)
-
   useEffect(() => {
     const index = links.findIndex((link) => link.src === pathname)
     setActiveIndex(index !== -1 ? index : 0)
   }, [pathname, links])
-
-  const itemHeight = 56
-  const gap = 4
-  const indicatorOffset = activeIndex * (itemHeight + gap)
 
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Navegación</SidebarGroupLabel>
       <SidebarMenu className="relative">
         {links.map((item, index) => (
-          <SidebarMenuItem key={index}>
+          <SidebarMenuItem
+            key={index}
+            className={index === activeIndex ? 'bg-accent rounded-md' : ''}
+          >
             <SidebarMenuButton
               asChild
               tooltip={item.label}
