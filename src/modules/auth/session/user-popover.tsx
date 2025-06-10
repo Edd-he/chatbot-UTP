@@ -43,7 +43,7 @@ export default function UserPopover() {
           ) : (
             <Link
               className="flex-center duration-200 p-2 rounded gap-2 hover:bg-secondary cursor-pointer"
-              href={'/'}
+              href={'/auth'}
             >
               Iniciar Sesión
             </Link>
