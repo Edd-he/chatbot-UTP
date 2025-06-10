@@ -35,6 +35,7 @@ export default function Page() {
         password: data.password,
         redirect: false,
       })
+      console.log(response)
       if (!response?.ok) {
         throw {
           message: response?.error || 'Error en la solicitud',
@@ -42,6 +43,7 @@ export default function Page() {
       }
       setLoading(false)
     } catch (error: any) {
+      console.log(error)
       setLoading(false)
       const errorMessage = error.message
 
