@@ -40,10 +40,11 @@ export default function Page() {
           message: response?.error || 'Error en la solicitud',
         }
       }
-      setLoading(false)
     } catch (e: any) {
       console.error((e as Error).message)
       toast.error('Credenciales Inválidas')
+    } finally {
+      setLoading(false)
     }
   }
 
