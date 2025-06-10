@@ -35,19 +35,15 @@ export default function Page() {
         password: data.password,
         redirect: false,
       })
-      console.log(response)
       if (!response?.ok) {
         throw {
           message: response?.error || 'Error en la solicitud',
         }
       }
       setLoading(false)
-    } catch (error: any) {
-      console.log(error)
-      setLoading(false)
-      const errorMessage = error.message
-
-      toast.error(errorMessage)
+    } catch (e: any) {
+      console.error((e as Error).message)
+      toast.error('Credenciales Inválidas')
     }
   }
 
