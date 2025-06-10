@@ -9,6 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@shared/components/ui/popover'
+import Link from 'next/link'
 
 import CloseSessionButton from './close-session-btn'
 
@@ -37,7 +38,16 @@ export default function UserPopover() {
           align="end"
           className="flex flex-col gap-1 items-start text-sm w-auto p-1"
         >
-          <CloseSessionButton iconSize={18} label="Cerrar Sesión" />
+          {session ? (
+            <CloseSessionButton iconSize={18} label="Cerrar Sesión" />
+          ) : (
+            <Link
+              className="flex-center duration-200 p-2 rounded gap-2 hover:bg-secondary cursor-pointer"
+              href={'/'}
+            >
+              Iniciar Sesión
+            </Link>
+          )}
         </PopoverContent>
       </Popover>
     </>
