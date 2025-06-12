@@ -20,7 +20,7 @@ export default function UserPopover() {
     <>
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant={'outline'} className="gap-3">
+          <Button variant={'ghost'} className="gap-3">
             <PiUserCheckLight size={22} />
             {status === 'loading' ? (
               <AiOutlineLoading

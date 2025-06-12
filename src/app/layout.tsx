@@ -27,14 +27,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html
+      lang="es"
+      className="bg-background scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent"
+    >
       <body
-        className={` ${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={` ${geistSans.variable} ${geistMono.variable} antialiased `}
       >
         <NextAuthProvider>
-          <div vaul-drawer-wrapper="" className="bg-background">
-            {children}
-          </div>
+          <div vaul-drawer-wrapper="">{children}</div>
           <Toaster />
         </NextAuthProvider>
       </body>

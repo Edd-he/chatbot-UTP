@@ -75,8 +75,8 @@ export function InteractiveRunsChart({
             tickMargin={8}
             minTickGap={21}
             tickFormatter={(value) => {
-              const date = new Date(value)
-              return date.toLocaleDateString('es', {
+              const date = new Date(`${value}T00:00:00`)
+              return date.toLocaleString('es', {
                 month: 'short',
                 day: 'numeric',
               })
@@ -84,6 +84,7 @@ export function InteractiveRunsChart({
           />
           {showYAxis && (
             <YAxis
+              width={20}
               domain={[minValue * 0.9, maxValue * 1.1]}
               tickFormatter={(value) => `${Math.round(value)}`}
             />
@@ -94,8 +95,8 @@ export function InteractiveRunsChart({
               <ChartTooltipContent
                 className="w-[180px]"
                 labelFormatter={(value) => {
-                  const date = new Date(value)
-                  return date.toLocaleDateString('es', {
+                  const date = new Date(`${value}T00:00:00`)
+                  return date.toLocaleString('es', {
                     month: 'short',
                     day: 'numeric',
                   })

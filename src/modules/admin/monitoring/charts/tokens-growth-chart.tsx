@@ -10,16 +10,16 @@ import {
 
 import { TokensData } from '../actions/fetch-tokens-month'
 
-const chartConfig = {
-  label: {
-    color: 'rgb(0,0,0)',
-  },
-} satisfies ChartConfig
+const chartConfig = {} satisfies ChartConfig
 
 type Props = {
   chartData: TokensData[]
 }
 export default function TokensGrowthChart({ chartData }: Props) {
+  const data = chartData.map((item) => ({
+    ...item,
+    tokens: item.totalTokens,
+  }))
   return (
     <div className="aspect-auto h-[500px] w-full">
       <ChartContainer
@@ -28,7 +28,7 @@ export default function TokensGrowthChart({ chartData }: Props) {
       >
         <AreaChart
           accessibilityLayer
-          data={chartData}
+          data={data}
           margin={{
             left: 12,
             right: 12,
@@ -47,11 +47,11 @@ export default function TokensGrowthChart({ chartData }: Props) {
             content={<ChartTooltipContent indicator="dot" />}
           />
           <Area
-            dataKey="totalTokens"
+            dataKey="tokens"
             type="linear"
-            fill="hsl(var(--chart-5))"
+            fill="red"
             fillOpacity={0.6}
-            stroke="hsl(var(--chart-5))"
+            stroke="red"
           />
         </AreaChart>
       </ChartContainer>

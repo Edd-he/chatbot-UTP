@@ -35,7 +35,7 @@ export function NavMain({ links }: Props) {
   const pathname = usePathname()
   const [activeIndex, setActiveIndex] = useState(0)
   useEffect(() => {
-    const index = links.findIndex((link) => link.src === pathname)
+    const index = links.findIndex((link) => link.src.startsWith(pathname))
     setActiveIndex(index !== -1 ? index : 0)
   }, [pathname, links])
 
@@ -44,14 +44,13 @@ export function NavMain({ links }: Props) {
       <SidebarGroupLabel>Navegación</SidebarGroupLabel>
       <SidebarMenu className="relative">
         {links.map((item, index) => (
-          <SidebarMenuItem
-            key={index}
-            className={index === activeIndex ? 'bg-accent rounded-md' : ''}
-          >
+          <SidebarMenuItem key={index}>
             <SidebarMenuButton
               asChild
+              className={`[&>svg]:size-6 group-data-[collapsible=icon]:[&>svg]:mx-4 [&>svg]:mx-2 h-12 gap-2 duration-200 ${
+                index === activeIndex ? 'bg-blue-light hover:bg-blue-light' : ''
+              }`}
               tooltip={item.label}
-              className="[&>svg]:size-6 group-data-[collapsible=icon]:[&>svg]:mx-4 [&>svg]:mx-2 h-12 gap-2 duration-200"
             >
               <Link href={item.src}>
                 {item.icon && <item.icon />}

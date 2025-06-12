@@ -6,6 +6,7 @@ import { signIn, useSession } from 'next-auth/react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
+import Link from 'next/link'
 
 import { Button } from '@/modules/shared/components/ui/button'
 import { Input } from '@/modules/shared/components/ui/input'
@@ -108,6 +109,9 @@ export default function Page() {
             )}
           </Button>
         </form>
+        <Button variant={'outline'} className=" w-full mt-5">
+          <Link href={'/'}>Conversar con el Chatbot</Link>
+        </Button>
       </div>
     </>
   )

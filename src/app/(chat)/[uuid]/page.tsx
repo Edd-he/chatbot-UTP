@@ -2,8 +2,10 @@
 
 import { RiSendPlaneLine } from 'react-icons/ri'
 import * as React from 'react'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, use } from 'react'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+import useSWR from 'swr'
 
 import { useStreamMessage } from '@/modules/chat/hooks/use-stream-message'
 import CustomMarkdown from '@/modules/shared/components/markdown'
@@ -12,21 +14,35 @@ import { Button } from '@/modules/shared/components/ui/button'
 import ChatbotThinking from '@/modules/chat/components/chatbot-thinking'
 import UserMessage from '@/modules/chat/components/user-message'
 import WelcomeMessage from '@/modules/chat/components/welcome-message'
+import { BACKEND_URL } from '@/lib/constants'
+import { useConversationStore } from '@/app/store/conversations.store'
+import { Message } from '@/modules/chat/types/message.types'
+import { fetcher } from '@/lib/utils'
 
-export default function Page() {
+type Props = {
+  params: Promise<{ uuid: string }>
+}
+export default function Page({ params }: Props) {
+  const { uuid } = use(params)
+  const {
+    data,
+    error: getError,
+    isLoading,
+  } = useSWR<Message[]>(`${BACKEND_URL}/chat/${uuid}/get-chat-history`, fetcher)
+  const newConversation = useConversationStore((state) => state.addConversation)
+
   const [input, setInput] = useState('')
+  const { refresh } = useRouter()
+
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const messageContainerRef = useRef<HTMLDivElement>(null)
+  const lastMessageIndexRef = useRef<number | null>(null)
 
-  const [messages, setMessages] = useState<
-    { sender: 'user' | 'bot'; text: string }[]
-  >([])
+  const [messages, setMessages] = useState<Message[]>([])
 
   const { text, error, loading, startStream } = useStreamMessage(
-    'https://chatbot-ia-api.vercel.app/api/v1/chat/send',
+    `${BACKEND_URL}/chat/send`,
   )
-
-  const lastMessageIndexRef = useRef<number | null>(null)
 
   const handleStartStream = () => {
     if (!input.trim()) return
@@ -35,14 +51,15 @@ export default function Page() {
       const messagesUpdated = [
         ...prev,
         { sender: 'user' as 'user', text: input },
-        { sender: 'bot' as 'bot', text: '' },
+        { sender: 'model' as 'model', text: '' },
       ]
       lastMessageIndexRef.current = messagesUpdated.length - 1
       return messagesUpdated
     })
 
-    startStream(input, '0197583a-8cec-724d-a49f-80b0729b0729')
+    startStream(input, uuid)
     setInput('')
+    newConversation({ id: uuid, title: '' })
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -63,6 +80,10 @@ export default function Page() {
   }
 
   useEffect(() => {
+    refresh()
+  }, [uuid])
+
+  useEffect(() => {
     adjustTextareaHeight()
   }, [input])
 
@@ -75,7 +96,7 @@ export default function Page() {
       setMessages((prev) => {
         const updated = [...prev]
         updated[lastMessageIndexRef.current!] = {
-          sender: 'bot',
+          sender: 'model',
           text,
         }
         return updated
@@ -87,6 +108,11 @@ export default function Page() {
     messageContainerRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  useEffect(() => {
+    if (data) setMessages(data)
+  }, [data, uuid])
+
+  if (getError) toast.error(error)
   return (
     <>
       <section className="relative flex-1 flex flex-col max-w-4xl mx-auto w-full px-6 py-8">
@@ -99,7 +125,7 @@ export default function Page() {
                 <UserMessage text={msg.text} />
               ) : (
                 <div className="prose prose-gray text-sm py-2 rounded-lg w-fit mr-auto max-w-[80%] max-sm:text-xs">
-                  {loading && index === messages.length - 1 && (
+                  {isLoading && loading && index === messages.length - 1 && (
                     <ChatbotThinking />
                   )}
                   <CustomMarkdown>{msg.text}</CustomMarkdown>
@@ -110,7 +136,7 @@ export default function Page() {
           <div ref={messageContainerRef} />
         </div>
 
-        <div className="sticky bottom-0 rounded-lg border p-4  sm:max-w-4xl w-full bg-background shadow-[0_-12px_16px_-1px_rgba(0,0,0,0.08)] z-20">
+        <div className="sticky bottom-0 rounded-lg border p-4 sm:max-w-4xl w-full bg-background shadow-background shadow-[0_-12px_16px_-1px_rgba(0,0,0,0.08)] z-20">
           <div className="flex-center gap-3">
             <Textarea
               ref={inputRef}
