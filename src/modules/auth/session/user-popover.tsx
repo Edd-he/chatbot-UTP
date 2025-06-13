@@ -19,8 +19,8 @@ export default function UserPopover() {
   return (
     <>
       <Popover>
-        <PopoverTrigger asChild>
-          <Button variant={'ghost'} className="gap-3">
+        <Button asChild variant={'ghost'} className="gap-3">
+          <PopoverTrigger className="data-[state=open]:ring-1 ring-ring">
             <PiUserCheckLight size={22} />
             {status === 'loading' ? (
               <AiOutlineLoading
@@ -32,8 +32,8 @@ export default function UserPopover() {
             ) : (
               ''
             )}
-          </Button>
-        </PopoverTrigger>
+          </PopoverTrigger>
+        </Button>
         <PopoverContent
           align="end"
           className="flex flex-col gap-1 items-start text-sm w-auto p-1"

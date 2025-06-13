@@ -29,8 +29,7 @@ export default function ConversationsAside() {
     if (!last.title || last.title === '') {
       setLoadingTitle(last.id)
       try {
-        await sleep(7000)
-        await fetch(`${BACKEND_URL}/conversations/${last.id}/get-title`)
+        await sleep(10000)
 
         const res = await fetch(
           `${BACKEND_URL}/conversations/${last.id}/get-title`,
@@ -58,7 +57,11 @@ export default function ConversationsAside() {
   }, [conversations, updateTitleConversation])
 
   return (
-    <div className="group fixed top-0 left-0 w-20 hover:w-80 bg-accent hover:bg-background transform-cpu duration-200 h-screen flex flex-col items-center border-r z-50 px-3 ">
+    <div
+      className={
+        'group fixed top-0 left-0 w-20 hover:w-80 bg-accent hover:bg-background transform-cpu duration-200 h-screen flex-col items-center border-r px-3 flex'
+      }
+    >
       <div className="mt-5 mx-auto">
         <BsChevronLeft size={24} />
       </div>

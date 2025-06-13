@@ -40,8 +40,7 @@ export default function ConversationsSheet() {
     if (!last.title || last.title === '') {
       setLoadingTitle(last.id)
       try {
-        await sleep(6000)
-        await fetch(`${BACKEND_URL}/conversations/${last.id}/get-title`)
+        await sleep(10000)
 
         const res = await fetch(
           `${BACKEND_URL}/conversations/${last.id}/get-title`,
