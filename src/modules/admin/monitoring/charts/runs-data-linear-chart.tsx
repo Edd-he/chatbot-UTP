@@ -114,7 +114,7 @@ export function InteractiveRunsChart({
           />
           <Line
             type="monotone"
-            dataKey="erroneas"
+            dataKey="error"
             stroke={chartConfig.erroneas.color}
             strokeWidth={2}
             dot={false}

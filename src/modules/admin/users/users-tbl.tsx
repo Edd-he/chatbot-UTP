@@ -28,7 +28,7 @@ import { User } from '../types/users.types'
 import Pagination from '@/modules/shared/components/ui/pagination'
 import { Button } from '@/modules/shared/components/ui/button'
 import { BACKEND_URL } from '@/lib/constants'
-import { fetcher } from '@/lib/utils'
+import { fetcher } from '@/lib/http/fetcher'
 import { useSortData } from '@/modules/shared/hooks/use-sort-data'
 
 type Props = {
@@ -46,13 +46,13 @@ type GetUsers = {
 
 export default function UserTbl({ page, limit, status, query }: Props) {
   const url = `${BACKEND_URL}/users/get-all-users?page_size=${limit}&page=${page}&status=${status}&query=${query}`
-  const { data, error, isLoading } = useSWR<GetUsers>(url, fetcher)
+  const { data, error: getError, isLoading } = useSWR<GetUsers>(url, fetcher)
 
   const { handleSort, sortData } = useSortData<User>('number')
 
   const sortedUsers = sortData(data?.data)
 
-  if (error) toast.error(error)
+  if (getError) toast.error(getError)
 
   return (
     <Card x-chunk="users-table">

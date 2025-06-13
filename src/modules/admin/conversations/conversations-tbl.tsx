@@ -24,7 +24,7 @@ import Pagination from '@/modules/shared/components/ui/pagination'
 import { BACKEND_URL } from '@/lib/constants'
 import { useSortData } from '@/modules/shared/hooks/use-sort-data'
 import { Button } from '@/modules/shared/components/ui/button'
-import { fetcher } from '@/lib/utils'
+import { fetcher } from '@/lib/http/fetcher'
 
 type Props = {
   query: string

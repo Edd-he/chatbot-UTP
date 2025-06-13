@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react'
 export function useStreamMessage(url: string) {
   const [text, setText] = useState('')
   const [finalText, setFinalText] = useState('')
+  const [title, setTitle] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -27,7 +28,7 @@ export function useStreamMessage(url: string) {
         if (!res.ok) {
           const errorBody = await res.json()
           console.warn(errorBody)
-          const message = errorBody.message[0] || 'Error desconocido'
+          const message = errorBody.message?.[0] || 'Error desconocido'
           throw new Error(message)
         }
 
@@ -36,23 +37,34 @@ export function useStreamMessage(url: string) {
 
         const reader = res.body.getReader()
         const decoder = new TextDecoder('utf-8')
+
+        let accumulatedText = ''
+
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
 
           const chunk = decoder.decode(value, { stream: true })
+
           try {
-            const parsedErrorChunk = JSON.parse(chunk)
-            if (!parsedErrorChunk?.ok) {
-              setError(parsedErrorChunk.message)
+            const json = JSON.parse(chunk)
+
+            if (json?.title) {
+              setTitle(json.title)
+              continue
+            }
+
+            if (json?.message && !json.ok) {
+              setError(json.message)
               break
             }
           } catch {
-            /*No hacer catch en caso venga un chunk de error */
+            accumulatedText += chunk
+            setText(accumulatedText)
           }
-          setText((prev) => prev + chunk)
         }
-        setFinalText(text)
+
+        setFinalText(accumulatedText)
       } catch (e: unknown) {
         if (e instanceof Error) setError(e.message || 'Error desconocido')
       } finally {
@@ -65,6 +77,7 @@ export function useStreamMessage(url: string) {
   return {
     text,
     finalText,
+    title,
     error,
     loading,
     startStream,

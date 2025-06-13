@@ -14,10 +14,9 @@ type ConversationsStore = {
 }
 
 export const useConversationStore = create<ConversationsStore>()(
-  persist(
+  persist<ConversationsStore>(
     (set, get) => ({
       conversations: [],
-
       addConversation: (conversation) => {
         set((state) => {
           const exists = state.conversations.some(

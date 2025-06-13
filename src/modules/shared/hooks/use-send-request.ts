@@ -2,6 +2,8 @@
 import { HTTP_METHOD } from 'next/dist/server/web/http'
 import { useState } from 'react'
 
+import { parseErrorHttpMessage } from '@/lib/http/parse-error-http'
+
 export function useSendRequest<T>(
   url: string,
   method: HTTP_METHOD,
@@ -33,7 +35,7 @@ export function useSendRequest<T>(
       const result = await res.json()
 
       if (!res.ok) {
-        const message = parseErrorMessage(result.message)
+        const message = parseErrorHttpMessage(result.message)
         return { error: message }
       }
 
@@ -47,10 +49,4 @@ export function useSendRequest<T>(
   }
 
   return { sendRequest, loading }
-}
-
-function parseErrorMessage(msg: unknown): string {
-  if (Array.isArray(msg)) return msg[0]
-  if (typeof msg === 'string') return msg
-  return 'Error desconocido'
 }

@@ -1,51 +1,21 @@
 'use client'
+
 import { FaRegEdit } from 'react-icons/fa'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { toast } from 'sonner'
 import { BsChevronLeft } from 'react-icons/bs'
 import { AiOutlineLoading } from 'react-icons/ai'
 
 import { useConversationStore } from '@/app/store/conversations.store'
-import { BACKEND_URL } from '@/lib/constants'
-import { sleep } from '@/lib/utils'
 import { Button } from '@/modules/shared/components/ui/button'
 
 export default function ConversationsAside() {
   const conversations = useConversationStore((state) => state.conversations)
-  const updateTitleConversation = useConversationStore(
-    (state) => state.updateTitle,
-  )
+
   const pathname = usePathname()
   const [activeIndex, setActiveIndex] = useState('')
   const [loadingTitle, setLoadingTitle] = useState<string | null>(null)
-
-  async function getLasTitle() {
-    if (conversations.length === 0) return
-
-    const last = conversations[conversations.length - 1]
-
-    if (!last.title || last.title === '') {
-      setLoadingTitle(last.id)
-      try {
-        await sleep(10000)
-
-        const res = await fetch(
-          `${BACKEND_URL}/conversations/${last.id}/get-title`,
-        )
-
-        if (!res.ok) toast.error('Error al obtener el título')
-
-        const data = await res.json()
-        if (data?.title) updateTitleConversation(last.id, data.title)
-      } catch (e) {
-        console.error('Error al obtener el título', e)
-      } finally {
-        setLoadingTitle(null)
-      }
-    }
-  }
 
   useEffect(() => {
     const current = conversations.find((c) => `/${c.id}` === pathname)
@@ -53,13 +23,21 @@ export default function ConversationsAside() {
   }, [pathname, conversations])
 
   useEffect(() => {
-    getLasTitle()
-  }, [conversations, updateTitleConversation])
+    const last = [...conversations]
+      .reverse()
+      .find((conv) => !conv.title || conv.title === '')
+
+    if (last) {
+      setLoadingTitle(last.id)
+    } else {
+      setLoadingTitle(null)
+    }
+  }, [conversations])
 
   return (
     <div
       className={
-        'group fixed top-0 left-0 w-20 hover:w-80 bg-accent hover:bg-background transform-cpu duration-200 h-screen flex-col items-center border-r px-3 flex'
+        'group fixed top-0 left-0 w-20 hover:w-80 bg-accent hover:bg-background transform-cpu duration-200 h-screen flex flex-col items-center border-r px-3'
       }
     >
       <div className="mt-5 mx-auto">
@@ -80,9 +58,9 @@ export default function ConversationsAside() {
         <span className="text-start text-base px-5 flex justify-start mb-4 font-semibold truncate">
           Reciente
         </span>
-        <ul className="h-[60%] overflow-y-auto px-3 space-y-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent">
+        <ul className="h-96 overflow-y-auto px-3 space-y-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent text-sm">
           {[...conversations].reverse().map((conv, i) => (
-            <li key={i} className="flex ">
+            <li key={i} className="flex">
               <Link
                 href={`/${conv.id}`}
                 onClick={() => setActiveIndex(conv.id)}

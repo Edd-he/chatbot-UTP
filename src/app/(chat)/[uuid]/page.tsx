@@ -17,7 +17,7 @@ import WelcomeMessage from '@/modules/chat/components/welcome-message'
 import { BACKEND_URL } from '@/lib/constants'
 import { useConversationStore } from '@/app/store/conversations.store'
 import { Message } from '@/modules/chat/types/message.types'
-import { fetcher } from '@/lib/utils'
+import { fetcher } from '@/lib/http/fetcher'
 
 type Props = {
   params: Promise<{ uuid: string }>
@@ -29,7 +29,9 @@ export default function Page({ params }: Props) {
     error: getError,
     isLoading,
   } = useSWR<Message[]>(`${BACKEND_URL}/chat/${uuid}/get-chat-history`, fetcher)
+
   const newConversation = useConversationStore((state) => state.addConversation)
+  const updateTitle = useConversationStore((state) => state.updateTitle)
 
   const [input, setInput] = useState('')
   const { refresh } = useRouter()
@@ -40,9 +42,13 @@ export default function Page({ params }: Props) {
 
   const [messages, setMessages] = useState<Message[]>([])
 
-  const { text, error, loading, startStream } = useStreamMessage(
-    `${BACKEND_URL}/chat/send`,
-  )
+  const {
+    text,
+    error,
+    loading,
+    title: newTitle,
+    startStream,
+  } = useStreamMessage(`${BACKEND_URL}/chat/send`)
 
   const handleStartStream = () => {
     if (!input.trim()) return
@@ -58,8 +64,8 @@ export default function Page({ params }: Props) {
     })
 
     startStream(input, uuid)
-    setInput('')
     newConversation({ id: uuid, title: '' })
+    setInput('')
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -88,7 +94,10 @@ export default function Page({ params }: Props) {
   }, [input])
 
   useEffect(() => {
-    if (error) toast.error(error)
+    if (error) {
+      toast.error(error)
+      updateTitle(uuid, 'Error')
+    }
   }, [error])
 
   useEffect(() => {
@@ -111,6 +120,12 @@ export default function Page({ params }: Props) {
   useEffect(() => {
     if (data) setMessages(data)
   }, [data, uuid])
+
+  useEffect(() => {
+    if (newTitle) {
+      updateTitle(uuid, newTitle)
+    }
+  }, [newTitle])
 
   if (getError) toast.error(error)
   return (

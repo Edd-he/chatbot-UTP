@@ -24,11 +24,11 @@ import Pagination from '@/modules/shared/components/ui/pagination'
 import { Button } from '@/modules/shared/components/ui/button'
 import { BACKEND_URL } from '@/lib/constants'
 import { useSortData } from '@/modules/shared/hooks/use-sort-data'
-import { fetcher } from '@/lib/utils'
+import { fetcher } from '@/lib/http/fetcher'
 
 type Props = {
   query: string
-  status: string
+  error: string
   page: number
   limit: number
 }
@@ -39,15 +39,15 @@ type GetRuns = {
   totalPages: number
 }
 
-export default function RunsTbl({ page, limit, status, query }: Props) {
-  const url = `${BACKEND_URL}/runs/get-all-runs?page_size=${limit}&page=${page}&status=${status}&query=${query}`
-  const { data, error, isLoading } = useSWR<GetRuns>(url, fetcher)
+export default function RunsTbl({ page, limit, error, query }: Props) {
+  const url = `${BACKEND_URL}/runs/get-all-runs?page_size=${limit}&page=${page}&error=${error}&query=${query}`
+  const { data, error: getError, isLoading } = useSWR<GetRuns>(url, fetcher)
   const runs = data?.data ?? []
 
   const { handleSort, sortData } = useSortData<Run>('id')
   const sortedRuns = sortData(runs)
 
-  if (error) toast.error('Error al cargar las ejecuciones.')
+  if (getError) toast.error('Error al cargar las ejecuciones.')
 
   return (
     <Card x-chunk="runs-table">
@@ -117,7 +117,7 @@ export default function RunsTbl({ page, limit, status, query }: Props) {
                   className="hover:bg-muted/50 duration-200 relative h-14 border-t"
                 >
                   <td className="rounded-l-lg max-lg:hidden">{run.number}</td>
-                  <td>{new Date(run.created_at).toLocaleString()}</td>
+                  <td>{run.created_at}</td>
                   <td className="max-lg:hidden">{run.model_llm}</td>
                   <td
                     className={`max-lg:hidden text-shadow-lg ${

@@ -8,6 +8,7 @@ import { BsChevronLeft } from 'react-icons/bs'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { FaRegEdit } from 'react-icons/fa'
+import { AiOutlineLoading } from 'react-icons/ai'
 
 import {
   Sheet,
@@ -25,38 +26,10 @@ import { sleep } from '@/lib/utils'
 export default function ConversationsSheet() {
   const [open, setOpen] = useState(false)
   const conversations = useConversationStore((state) => state.conversations)
-  const updateTitleConversation = useConversationStore(
-    (state) => state.updateTitle,
-  )
+
   const pathname = usePathname()
   const [activeIndex, setActiveIndex] = useState('')
   const [loadingTitle, setLoadingTitle] = useState<string | null>(null)
-
-  async function getLasTitle() {
-    if (conversations.length === 0) return
-
-    const last = conversations[conversations.length - 1]
-
-    if (!last.title || last.title === '') {
-      setLoadingTitle(last.id)
-      try {
-        await sleep(10000)
-
-        const res = await fetch(
-          `${BACKEND_URL}/conversations/${last.id}/get-title`,
-        )
-
-        if (!res.ok) toast.error('Error al obtener el título')
-
-        const data = await res.json()
-        if (data?.title) updateTitleConversation(last.id, data.title)
-      } catch (e) {
-        console.error('Error al obtener el título', e)
-      } finally {
-        setLoadingTitle(null)
-      }
-    }
-  }
 
   useEffect(() => {
     const current = conversations.find((c) => `/${c.id}` === pathname)
@@ -64,8 +37,16 @@ export default function ConversationsSheet() {
   }, [pathname, conversations])
 
   useEffect(() => {
-    getLasTitle()
-  }, [conversations, updateTitleConversation])
+    const last = [...conversations]
+      .reverse()
+      .find((conv) => !conv.title || conv.title === '')
+
+    if (last) {
+      setLoadingTitle(last.id)
+    } else {
+      setLoadingTitle(null)
+    }
+  }, [conversations])
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -97,24 +78,26 @@ export default function ConversationsSheet() {
           <span className="text-start text-base px-5 flex justify-start mb-4 font-semibold truncate">
             Reciente
           </span>
-          <ul className="h-[60%] overflow-y-auto px-3 space-y-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent">
+          <ul className="h-1/2 overflow-y-scroll px-3 space-y-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent">
             {[...conversations].reverse().map((conv, i) => (
               <li key={i} className="flex ">
                 <Link
                   href={`/${conv.id}`}
-                  onClick={() => {
-                    setActiveIndex(conv.id)
-                    setOpen(false)
-                  }}
-                  className={`cursor-pointer rounded-md transition-colors truncate relative w-full "w-full flex p-2 ${
+                  onClick={() => setActiveIndex(conv.id)}
+                  className={`cursor-pointer rounded-md transition-colors truncate max-w-64 w-full relative flex p-2 ${
                     activeIndex === conv.id
                       ? 'bg-blue-light'
                       : 'hover:bg-accent'
                   }`}
                 >
-                  {loadingTitle === conv.id
-                    ? 'Cargando título...'
-                    : conv.title || 'Sin título'}
+                  {loadingTitle === conv.id ? (
+                    <span className="flex items-center gap-2">
+                      <AiOutlineLoading className="animate-spin ease-in-out" />
+                      Cargando título...
+                    </span>
+                  ) : (
+                    conv.title || 'Sin título'
+                  )}
                 </Link>
               </li>
             ))}

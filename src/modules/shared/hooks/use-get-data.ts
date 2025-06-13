@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 
+import { parseErrorHttpMessage } from '@/lib/http/parse-error-http'
+
 export function useGetData<T>(url: string, auth?: string) {
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(true)
@@ -25,7 +27,7 @@ export function useGetData<T>(url: string, auth?: string) {
         if (!response.ok) {
           const errorBody = await response.json()
           console.warn(errorBody)
-          const message = parseErrorMessage(errorBody.message)
+          const message = parseErrorHttpMessage(errorBody.message)
           throw new Error(message)
         }
 
@@ -42,10 +44,4 @@ export function useGetData<T>(url: string, auth?: string) {
   }, [url, refreshKey, auth])
 
   return { setData, data, loading, error, refresh }
-}
-
-function parseErrorMessage(msg: unknown): string {
-  if (Array.isArray(msg)) return msg[0]
-  if (typeof msg === 'string') return msg
-  return 'Error desconocido'
 }
