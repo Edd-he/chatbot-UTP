@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import useSWR from 'swr'
 
-import { useStreamMessage } from '@/modules/chat/hooks/use-stream-message'
+import { useChatStreamMessage } from '@/modules/chat/hooks/use-chat-stream-message'
 import CustomMarkdown from '@/modules/shared/components/markdown'
 import { Textarea } from '@/modules/shared/components/ui/textarea'
 import { Button } from '@/modules/shared/components/ui/button'
@@ -24,11 +24,10 @@ type Props = {
 }
 export default function Page({ params }: Props) {
   const { uuid } = use(params)
-  const {
-    data,
-    error: getError,
-    isLoading,
-  } = useSWR<Message[]>(`${BACKEND_URL}/chat/${uuid}/get-chat-history`, fetcher)
+  const { data, error: getError } = useSWR<Message[]>(
+    `${BACKEND_URL}/chat/${uuid}/get-chat-history`,
+    fetcher,
+  )
 
   const newConversation = useConversationStore((state) => state.addConversation)
   const updateTitle = useConversationStore((state) => state.updateTitle)
@@ -48,7 +47,7 @@ export default function Page({ params }: Props) {
     loading,
     title: newTitle,
     startStream,
-  } = useStreamMessage(`${BACKEND_URL}/chat/send`)
+  } = useChatStreamMessage(`${BACKEND_URL}/chat/send`)
 
   const handleStartStream = () => {
     if (!input.trim()) return
@@ -122,9 +121,7 @@ export default function Page({ params }: Props) {
   }, [data, uuid])
 
   useEffect(() => {
-    if (newTitle) {
-      updateTitle(uuid, newTitle)
-    }
+    if (newTitle) updateTitle(uuid, newTitle)
   }, [newTitle])
 
   if (getError) toast.error(error)
@@ -140,7 +137,7 @@ export default function Page({ params }: Props) {
                 <UserMessage text={msg.text} />
               ) : (
                 <div className="prose prose-gray text-sm py-2 rounded-lg w-fit mr-auto max-w-[80%] max-sm:text-xs">
-                  {isLoading && loading && index === messages.length - 1 && (
+                  {loading && index === messages.length - 1 && (
                     <ChatbotThinking />
                   )}
                   <CustomMarkdown>{msg.text}</CustomMarkdown>

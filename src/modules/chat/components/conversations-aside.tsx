@@ -58,7 +58,7 @@ export default function ConversationsAside() {
         <span className="text-start text-base px-5 flex justify-start mb-4 font-semibold truncate">
           Reciente
         </span>
-        <ul className="h-96 overflow-y-auto px-3 space-y-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent text-sm">
+        <ul className="h-96 overflow-y-auto custom-scrollbar py-2 px-3 space-y-2 text-sm">
           {[...conversations].reverse().map((conv, i) => (
             <li key={i} className="flex">
               <Link

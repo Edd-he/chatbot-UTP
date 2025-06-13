@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 
-export function useStreamMessage(url: string) {
+export function useChatStreamMessage(url: string) {
   const [text, setText] = useState('')
   const [finalText, setFinalText] = useState('')
   const [title, setTitle] = useState<string | null>(null)

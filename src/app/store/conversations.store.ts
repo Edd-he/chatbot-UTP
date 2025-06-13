@@ -35,9 +35,11 @@ export const useConversationStore = create<ConversationsStore>()(
 
       updateTitle: (id, title) => {
         const { conversations } = get()
-        const updated = conversations.map((c) =>
-          c.id === id ? { ...c, title } : c,
-        )
+        const updated = conversations.map((c) => {
+          if (c.id !== id) return c
+          if (c.title && c.title !== '') return c
+          return { ...c, title }
+        })
         set({ conversations: updated })
       },
 

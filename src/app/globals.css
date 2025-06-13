@@ -139,6 +139,9 @@
     @apply flex items-center justify-center;
   }
 
+  @utility custom-scrollbar {
+    @apply scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent;
+  }
 
   @utility bg-custom-conic-gradient-light {
     background-image: conic-gradient(

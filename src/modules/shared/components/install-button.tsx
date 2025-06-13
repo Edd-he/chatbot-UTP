@@ -5,7 +5,7 @@ import { BsDownload } from 'react-icons/bs'
 import { Button } from './ui/button'
 import { useMediaQuery } from '../hooks/use-media-query'
 
-const InstallButton = () => {
+function InstallButton() {
   const [installPrompt, setInstallPrompt] = useState<any>(null)
   const [isStandalone, setIsStandalone] = useState(false)
   const [isCompatible, setIsCompatible] = useState(false)
@@ -56,7 +56,7 @@ const InstallButton = () => {
       {installPrompt && (
         <Button
           onClick={handleInstallClick}
-          variant={'outline'}
+          variant={'ghost'}
           size={'icon'}
           className="duration-200"
         >

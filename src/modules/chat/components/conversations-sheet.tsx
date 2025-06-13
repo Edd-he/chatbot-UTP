@@ -78,7 +78,7 @@ export default function ConversationsSheet() {
           <span className="text-start text-base px-5 flex justify-start mb-4 font-semibold truncate">
             Reciente
           </span>
-          <ul className="h-1/2 overflow-y-scroll px-3 space-y-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent">
+          <ul className="h-96 overflow-y-auto py-2 px-3 space-y-2 custom-scrollbar text-sm">
             {[...conversations].reverse().map((conv, i) => (
               <li key={i} className="flex ">
                 <Link
