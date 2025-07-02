@@ -1,4 +1,5 @@
 'use client'
+
 import { TfiMenuAlt } from 'react-icons/tfi'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -6,7 +7,6 @@ import Link from 'next/link'
 import { FaRegEdit } from 'react-icons/fa'
 import { AiOutlineLoading } from 'react-icons/ai'
 import { RiDeleteBin6Line } from 'react-icons/ri'
-import { MdOutlineUnfoldMore } from 'react-icons/md'
 
 import redirectChat from '../server_actions/redirect'
 
@@ -20,11 +20,6 @@ import {
 import UTP from '@/modules/shared/components/UTP'
 import { Button } from '@/modules/shared/components/ui/button'
 import { useConversationStore } from '@/app/store/conversations.store'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/modules/shared/components/ui/popover'
 
 export default function ConversationsSheet() {
   const conversations = useConversationStore((state) => state.conversations)
@@ -32,7 +27,6 @@ export default function ConversationsSheet() {
     (state) => state.removeConversation,
   )
 
-  const [openPopoverId, setOpenPopoverId] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const [activeIndex, setActiveIndex] = useState('')
@@ -48,43 +42,43 @@ export default function ConversationsSheet() {
       .reverse()
       .find((conv) => !conv.title || conv.title === '')
 
-    if (last) {
-      setLoadingTitle(last.id)
-    } else {
-      setLoadingTitle(null)
-    }
+    setLoadingTitle(last ? last.id : null)
   }, [conversations])
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <Button asChild variant={'ghost'}>
+      <Button asChild variant="ghost">
         <SheetTrigger>
           <TfiMenuAlt />
         </SheetTrigger>
       </Button>
+
       <SheetContent
-        side={'left'}
+        side="left"
         className="flex flex-col gap-5 items-center w-80 border-border"
       >
         <SheetHeader>
           <SheetTitle className="text-2xl w-full flex justify-center items-start gap-1">
-            <UTP className="text-3xl " iconClassName="size-[24px]" />
+            <UTP className="text-3xl" iconClassName="size-[24px]" />
           </SheetTitle>
         </SheetHeader>
+
         <div className="relative text-sm w-full mt-10">
           <Button
             asChild
-            variant={'ghost'}
+            variant="ghost"
             className="flex justify-start gap-2 mx-4 p-2 text-base mb-4 truncate"
           >
-            <Link href={'/'} onClick={() => setOpen(false)}>
+            <Link href="/" onClick={() => setOpen(false)}>
               <FaRegEdit className="size-5" />
               Nueva Conversación
             </Link>
           </Button>
+
           <span className="text-start text-base px-5 flex justify-start mb-4 font-semibold truncate">
             Reciente
           </span>
+
           <ul className="h-96 overflow-y-auto py-2 px-3 space-y-2 custom-scrollbar text-sm">
             {[...conversations].reverse().map((conv) => (
               <li
@@ -93,7 +87,10 @@ export default function ConversationsSheet() {
               >
                 <Link
                   href={`/${conv.id}`}
-                  onClick={() => setActiveIndex(conv.id)}
+                  onClick={() => {
+                    setActiveIndex(conv.id)
+                    setOpen(false)
+                  }}
                   className={`cursor-pointer rounded-md transition-colors truncate max-w-64 w-full relative flex p-2 ${
                     activeIndex === conv.id
                       ? 'bg-blue-light'
@@ -111,36 +108,18 @@ export default function ConversationsSheet() {
                     </span>
                   )}
                 </Link>
-                <Popover
-                  open={openPopoverId === conv.id}
-                  onOpenChange={(open) =>
-                    setOpenPopoverId(open ? conv.id : null)
-                  }
+
+                <button
+                  onClick={async () => {
+                    deleteConversation(conv)
+                    setOpen(false)
+                    await redirectChat()
+                  }}
+                  className="ml-2 p-1 hover:bg-red-100 text-red-600 rounded transition-colors"
+                  title="Eliminar conversación"
                 >
-                  <PopoverTrigger
-                    onClick={(e) => e.stopPropagation()}
-                    className="ml-2 p-1 hover:bg-muted rounded transition-colors"
-                  >
-                    <MdOutlineUnfoldMore size={18} className="rotate-90" />
-                  </PopoverTrigger>
-                  <PopoverContent
-                    align="start"
-                    className="flex flex-col gap-2 items-start text-sm p-1 max-w-26"
-                  >
-                    <button
-                      onClick={async () => {
-                        deleteConversation(conv)
-                        setOpen(false)
-                        setOpenPopoverId(null)
-                        await redirectChat()
-                      }}
-                      className="flex items-center gap-2 hover:bg-blue-light p-2 rounded-sm w-full"
-                    >
-                      <RiDeleteBin6Line size={16} />
-                      Eliminar
-                    </button>
-                  </PopoverContent>
-                </Popover>
+                  <RiDeleteBin6Line size={18} />
+                </button>
               </li>
             ))}
           </ul>
