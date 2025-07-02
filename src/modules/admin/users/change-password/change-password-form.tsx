@@ -5,6 +5,7 @@ import { SubmitHandler, useForm } from 'react-hook-form'
 import { Button } from '@shared/components/ui/button'
 import { Input } from '@shared/components/ui/input'
 import { toast } from 'sonner'
+import { useSession } from 'next-auth/react'
 
 import { ChangePasswordSchema } from '../../schemas/change-password-schema'
 
@@ -21,9 +22,11 @@ type InputForm = {
 }
 
 export default function ChangePasswordForm({ id, onSuccess }: Props) {
+  const { data: session } = useSession()
   const { sendRequest, loading } = useSendRequest(
     `${BACKEND_URL}/users/${id}/change-password`,
     'PATCH',
+    session?.tokens.access,
   )
   const {
     register,

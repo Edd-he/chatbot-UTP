@@ -24,7 +24,7 @@ export default function UserChangePasswordDialog({ id }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <Button asChild variant={'outline'}>
+      <Button asChild variant={'outline'} type="button">
         <DialogTrigger>Cambiar Contraseña</DialogTrigger>
       </Button>
       <DialogContent>
