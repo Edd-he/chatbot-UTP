@@ -21,17 +21,35 @@ const baseSchema = z.object({
     .min(8, { message: 'La contraseña debe tener al menos 8 caracteres' }),
   confirmPassword: z.string(),
   is_active: z.boolean({ message: 'El estado debe ser un valor booleano' }),
+  modules_access: z.array(z.string()).optional(),
 })
 
-export const userCreateSchema = baseSchema.refine(
-  (data) => data.password === data.confirmPassword,
-  {
+export const userCreateSchema = baseSchema
+  .refine((data) => data.password === data.confirmPassword, {
     message: 'Las contraseñas no coinciden',
     path: ['confirmPassword'],
-  },
-)
+  })
+  .refine(
+    (data) =>
+      data.role === 'SUPER_ADMIN' ||
+      (data.modules_access && data.modules_access.length > 0),
+    {
+      message: 'Debe seleccionar al menos un módulo si el rol es administrador',
+      path: ['modules_access'],
+    },
+  )
 
-export const userEditSchema = baseSchema.omit({
-  password: true,
-  confirmPassword: true,
-})
+export const userEditSchema = baseSchema
+  .omit({
+    password: true,
+    confirmPassword: true,
+  })
+  .refine(
+    (data) =>
+      data.role === 'SUPER_ADMIN' ||
+      (data.modules_access && data.modules_access.length > 0),
+    {
+      message: 'Debe seleccionar al menos un módulo si el rol es administrador',
+      path: ['modules_access'],
+    },
+  )

@@ -6,7 +6,7 @@ import { Button } from '@shared/components/ui/button'
 import { Input } from '@shared/components/ui/input'
 import { toast } from 'sonner'
 
-import { ChangePasswordSchema } from '../schemas/change-password-schema'
+import { ChangePasswordSchema } from '../../schemas/change-password-schema'
 
 import { BACKEND_URL } from '@/lib/constants'
 import { useSendRequest } from '@/modules/shared/hooks/use-send-request'

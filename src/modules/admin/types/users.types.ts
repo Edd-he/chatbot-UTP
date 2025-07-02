@@ -9,20 +9,12 @@ export type User = {
   email: string
   role: 'ADMIN' | 'SUPER_ADMIN'
   is_active: boolean
+  modules_access: ModuleAccess[]
 }
 
-export type UserFormData = {
-  dni: string
-  email: string
-  role: 'ADMIN' | 'SUPER_ADMIN'
-  is_active: boolean
-  password: string
-  confirmPassword?: string
-}
-
-export type UserEditFormData = {
-  dni?: string
-  email?: string
-  role?: string
-  is_active?: boolean
-}
+export type ModuleAccess =
+  | 'monitoring'
+  | 'topics'
+  | 'documents'
+  | 'logs'
+  | 'gemini'

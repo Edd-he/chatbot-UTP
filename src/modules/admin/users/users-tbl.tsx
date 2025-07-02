@@ -20,10 +20,12 @@ import {
   PopoverTrigger,
 } from '@shared/components/ui/popover'
 import { toast } from 'sonner'
-import { AiOutlineInfoCircle } from 'react-icons/ai'
+import { useSession } from 'next-auth/react'
+import { useState } from 'react'
 
 import TableSkeleton from '../skelletons/table-skeleton'
 import { User } from '../types/users.types'
+import { DeleteUserDialog } from './delete-user-dialog'
 
 import Pagination from '@/modules/shared/components/ui/pagination'
 import { Button } from '@/modules/shared/components/ui/button'
@@ -45,14 +47,25 @@ type GetUsers = {
 }
 
 export default function UserTbl({ page, limit, status, query }: Props) {
+  const { data: session } = useSession()
   const url = `${BACKEND_URL}/users/get-all-users?page_size=${limit}&page=${page}&status=${status}&query=${query}`
-  const { data, error: getError, isLoading } = useSWR<GetUsers>(url, fetcher)
+  const { data, error, isLoading, mutate } = useSWR<GetUsers>(
+    session ? url : null,
+    (url: string) => fetcher(url, session?.tokens.access),
+  )
+
+  const [selected, setSelected] = useState<User | null>(null)
+  const [open, setOpen] = useState(false)
+
+  const handleOpenChange = (value: boolean) => {
+    setOpen(value)
+  }
 
   const { handleSort, sortData } = useSortData<User>('number')
 
   const sortedUsers = sortData(data?.data)
 
-  if (getError) toast.error(getError)
+  if (error) toast.error(error.message)
 
   return (
     <Card x-chunk="users-table">
@@ -149,18 +162,18 @@ export default function UserTbl({ page, limit, status, query }: Props) {
                         className="flex flex-col gap-2 items-start text-sm p-1 max-w-40"
                       >
                         <Link
-                          href={`/admin/users/${user.id}`}
-                          className="flex items-center gap-2 hover:bg-secondary p-2 w-full rounded-sm "
-                        >
-                          <AiOutlineInfoCircle size={18} /> Información
-                        </Link>
-                        <Link
                           href={`/admin/users/edit/${user.id}`}
                           className="flex items-center gap-2 hover:bg-secondary p-2 w-full rounded-sm"
                         >
                           <FiEdit size={18} /> Editar
                         </Link>
-                        <button className="flex items-center gap-2 hover:bg-secondary p-2 rounded-sm w-full">
+                        <button
+                          onClick={() => {
+                            setSelected(user)
+                            handleOpenChange(true)
+                          }}
+                          className="flex items-center gap-2 hover:bg-secondary p-2 rounded-sm w-full"
+                        >
                           <RiDeleteBin6Line size={18} />
                           Eliminar
                         </button>
@@ -182,6 +195,12 @@ export default function UserTbl({ page, limit, status, query }: Props) {
       <CardFooter>
         <Pagination totalPages={data?.totalPages ?? 1} />
       </CardFooter>
+      <DeleteUserDialog
+        open={open}
+        user={selected}
+        handleOpenChange={handleOpenChange}
+        handleRefresh={mutate}
+      />
     </Card>
   )
 }

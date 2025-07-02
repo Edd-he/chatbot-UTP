@@ -22,7 +22,7 @@ import {
 } from '@shared/components/ui/dialog'
 import { useMediaQuery } from '@shared/hooks/use-media-query'
 
-import { RunsData } from '../actions/fetch-runs-analytics'
+import { RunsData } from '../server_actions/fetch-runs-analytics'
 
 type InteractiveExecutionChartProps = {
   showYAxis?: boolean

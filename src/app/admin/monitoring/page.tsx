@@ -9,10 +9,10 @@ import {
 
 import TokensGrowthChart from '@/modules/admin/monitoring/charts/tokens-growth-chart'
 import RunsDataLinearChart from '@/modules/admin/monitoring/charts/runs-data-linear-chart'
-import { fetchRunsData } from '@/modules/admin/monitoring/actions/fetch-runs-analytics'
-import { fetchTokenssData } from '@/modules/admin/monitoring/actions/fetch-tokens-month'
+import { fetchRunsData } from '@/modules/admin/monitoring/server_actions/fetch-runs-analytics'
+import { fetchTokenssData } from '@/modules/admin/monitoring/server_actions/fetch-tokens-month'
 import TopInputsList from '@/modules/admin/monitoring/components/top-inputs-list'
-import { fetchTopInputs } from '@/modules/admin/monitoring/actions/fetch-top-inputs'
+import { fetchTopInputs } from '@/modules/admin/monitoring/server_actions/fetch-top-inputs'
 
 export default async function Page() {
   const runs = await fetchRunsData()

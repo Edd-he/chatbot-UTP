@@ -24,25 +24,29 @@ import {
 } from '@shared/components/ui/select'
 import { Button } from '@shared/components/ui/button'
 import { z } from 'zod'
+import { useSession } from 'next-auth/react'
 
-import { DniQueryForm } from '@/modules/admin/users/fetch-dni-form'
-import { FetchDniDialog } from '@/modules/admin/users/fetch-dni-dialog'
+import { DniQueryForm } from '@/modules/admin/users/verify-dni/fetch-dni-form'
+import { FetchDniDialog } from '@/modules/admin/users/verify-dni/fetch-dni-dialog'
 import { useSendRequest } from '@/modules/shared/hooks/use-send-request'
 import { BACKEND_URL } from '@/lib/constants'
 import { Switch } from '@/modules/shared/components/ui/switch'
 import { userCreateSchema } from '@/modules/admin/schemas/user-schema'
+import { ACCESS_MODULES } from '@/config/links'
 
 type ReniecData = {
   name: string
   lastName: string
 }
 
-type UserFormValues = z.infer<typeof userCreateSchema>
+type CreateUserSchemaType = z.infer<typeof userCreateSchema>
 
 export default function Page() {
+  const { data: session } = useSession()
   const { sendRequest, loading } = useSendRequest(
     `${BACKEND_URL}/users/create-user`,
     'POST',
+    session?.tokens.access,
   )
   const [open, setOpen] = useState(false)
   const { push } = useRouter()
@@ -54,7 +58,7 @@ export default function Page() {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<UserFormValues>({
+  } = useForm<CreateUserSchemaType>({
     resolver: zodResolver(userCreateSchema),
     defaultValues: {
       is_active: true,
@@ -71,8 +75,12 @@ export default function Page() {
     setValue('dni', dni)
   }
 
-  const onSubmit: SubmitHandler<UserFormValues> = async (data) => {
-    const { error } = await sendRequest(data)
+  const onSubmit: SubmitHandler<CreateUserSchemaType> = async (data) => {
+    const payload = {
+      ...data,
+      modules_access: data.role === 'ADMIN' ? data.modules_access : undefined,
+    }
+    const { error } = await sendRequest(payload)
 
     if (error) {
       toast.error(error)
@@ -82,7 +90,7 @@ export default function Page() {
     push('/admin/users')
   }
   const isActive = watch('is_active')
-
+  const role = watch('role')
   return (
     <>
       <section className="max-w-screen-xl w-full mx-auto flex items-center justify-start gap-5">
@@ -165,9 +173,6 @@ export default function Page() {
               </label>
             </CardContent>
           </Card>
-        </div>
-
-        <div className="w-full lg:w-[40%] relative flex flex-col gap-5">
           <Card className="w-full">
             <CardHeader>
               <CardTitle className="text-xl font-normal">
@@ -202,6 +207,9 @@ export default function Page() {
               )}
             </CardContent>
           </Card>
+        </div>
+
+        <div className="w-full lg:w-[40%] relative flex flex-col gap-5">
           <Card>
             <CardHeader>
               <CardTitle className="text-xl font-normal">Contraseña</CardTitle>
@@ -229,6 +237,62 @@ export default function Page() {
               </label>
             </CardContent>
           </Card>
+          {role === 'ADMIN' && (
+            <Controller
+              name="modules_access"
+              control={control}
+              defaultValue={[]}
+              rules={{
+                validate: (value) =>
+                  (value?.length ?? 0) > 0 || 'Selecciona al menos un módulo',
+              }}
+              render={({ field }) => {
+                const { value, onChange } = field
+
+                const togglePermission = (permission: string) => {
+                  if ((value ?? []).includes(permission)) {
+                    onChange((value ?? []).filter((p) => p !== permission))
+                  } else {
+                    onChange([...(value ?? []), permission])
+                  }
+                }
+
+                return (
+                  <Card>
+                    <CardHeader>
+                      <div className="flex-1">
+                        <CardTitle className="flex items-center gap-2">
+                          Permisos de Módulos
+                        </CardTitle>
+                        <CardDescription>
+                          Activa o desactiva el acceso a cada módulo del sistema
+                        </CardDescription>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {ACCESS_MODULES.map(({ module, title }) => (
+                        <div
+                          key={module}
+                          className="flex items-center justify-between p-4"
+                        >
+                          <div className="text-sm font-medium">{title}</div>
+                          <Switch
+                            checked={(value ?? []).includes(module)}
+                            onCheckedChange={() => togglePermission(module)}
+                          />
+                        </div>
+                      ))}
+                      {errors.modules_access && (
+                        <p className="text-red-600 text-xs mt-2">
+                          {errors.modules_access.message}
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                )
+              }}
+            />
+          )}
 
           <Button type="submit" disabled={loading}>
             {loading ? (

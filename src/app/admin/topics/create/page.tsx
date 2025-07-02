@@ -19,17 +19,20 @@ import { useRouter } from 'next/navigation'
 import { AiOutlineLoading } from 'react-icons/ai'
 import Link from 'next/link'
 import { MdOutlineChevronLeft } from 'react-icons/md'
+import { useSession } from 'next-auth/react'
 
 import { topicSchema } from '@/modules/admin/schemas/topics-schema'
 import { useSendRequest } from '@/modules/shared/hooks/use-send-request'
 import { BACKEND_URL } from '@/lib/constants'
 
-type TopicFormValues = z.infer<typeof topicSchema>
+type CreateTopicSchemaType = z.infer<typeof topicSchema>
 
 export default function Page() {
+  const { data: session } = useSession()
   const { sendRequest, loading } = useSendRequest(
     `${BACKEND_URL}/topics/create-topic`,
     'POST',
+    session?.tokens.access,
   )
   const { push } = useRouter()
   const {
@@ -39,7 +42,7 @@ export default function Page() {
     reset,
     watch,
     setValue,
-  } = useForm<TopicFormValues>({
+  } = useForm<CreateTopicSchemaType>({
     resolver: zodResolver(topicSchema),
     defaultValues: {
       name: '',
@@ -50,7 +53,7 @@ export default function Page() {
 
   const isActive = watch('is_active')
 
-  async function onSubmit(data: TopicFormValues) {
+  async function onSubmit(data: CreateTopicSchemaType) {
     const { error } = await sendRequest(data)
     if (error) {
       toast.error(error)

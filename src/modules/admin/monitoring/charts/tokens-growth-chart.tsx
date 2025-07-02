@@ -8,7 +8,7 @@ import {
   ChartTooltipContent,
 } from '@shared/components/ui/chart'
 
-import { TokensData } from '../actions/fetch-tokens-month'
+import { TokensData } from '../server_actions/fetch-tokens-month'
 
 const chartConfig = {} satisfies ChartConfig
 

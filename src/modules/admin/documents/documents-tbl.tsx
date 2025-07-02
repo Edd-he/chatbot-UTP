@@ -19,9 +19,12 @@ import { FiEdit } from 'react-icons/fi'
 import { RiDeleteBin6Line } from 'react-icons/ri'
 import useSWR from 'swr'
 import { HiOutlineArrowsUpDown } from 'react-icons/hi2'
+import { useSession } from 'next-auth/react'
+import { useState } from 'react'
 
 import TableSkeleton from '../skelletons/table-skeleton'
 import { Doc } from '../types/documents.types'
+import { DeleteDocumentDialog } from './delete-document-dialog'
 
 import Pagination from '@/modules/shared/components/ui/pagination'
 import { BACKEND_URL } from '@/lib/constants'
@@ -43,13 +46,25 @@ type GetDocuments = {
 }
 
 export default function DocumentsTbl({ page, limit, status, query }: Props) {
+  const { data: session } = useSession()
   const url = `${BACKEND_URL}/documents/get-all-documents?page_size=${limit}&page=${page}&status=${status}&query=${query}`
-  const { data, error, isLoading } = useSWR<GetDocuments>(url, fetcher)
+
+  const { data, error, isLoading, mutate } = useSWR<GetDocuments>(
+    session ? url : null,
+    (url: string) => fetcher(url, session?.tokens.access),
+  )
+
+  const [selected, setSelected] = useState<Doc | null>(null)
+  const [open, setOpen] = useState(false)
+
+  const handleOpenChange = (value: boolean) => {
+    setOpen(value)
+  }
 
   const { sortData, handleSort } = useSortData<Doc>('id')
   const sortedDocs = sortData(data?.data)
 
-  if (error) toast.error('Error al cargar los documentos.')
+  if (error) toast.error(error.message)
 
   return (
     <Card x-chunk="documents-table">
@@ -129,7 +144,7 @@ export default function DocumentsTbl({ page, limit, status, query }: Props) {
                   </td>
                   <td className="rounded-r-lg space-x-2">
                     <Popover>
-                      <PopoverTrigger className="p-2 rounded hover:shadow-xl hover:shadow-pressed/50 hover:bg-background duration-200">
+                      <PopoverTrigger className="p-2 rounded hover:bg-background duration-200">
                         <MdOutlineUnfoldMore size={20} />
                       </PopoverTrigger>
                       <PopoverContent
@@ -142,7 +157,13 @@ export default function DocumentsTbl({ page, limit, status, query }: Props) {
                         >
                           <FiEdit size={18} /> Editar
                         </Link>
-                        <button className="flex items-center gap-2 hover:bg-secondary p-2 rounded-sm w-full">
+                        <button
+                          onClick={() => {
+                            setSelected(doc)
+                            handleOpenChange(true)
+                          }}
+                          className="flex items-center gap-2 hover:bg-secondary p-2 rounded-sm w-full"
+                        >
                           <RiDeleteBin6Line size={18} />
                           Eliminar
                         </button>
@@ -164,6 +185,12 @@ export default function DocumentsTbl({ page, limit, status, query }: Props) {
       <CardFooter>
         <Pagination totalPages={data?.totalPages ?? 1} />
       </CardFooter>
+      <DeleteDocumentDialog
+        open={open}
+        doc={selected}
+        handleOpenChange={handleOpenChange}
+        handleRefresh={mutate}
+      />
     </Card>
   )
 }

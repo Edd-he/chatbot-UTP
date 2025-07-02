@@ -9,11 +9,12 @@ import { useState, useEffect, use } from 'react'
 import { AiOutlineLoading } from 'react-icons/ai'
 import _ from 'lodash'
 import { z } from 'zod'
+import { useSession } from 'next-auth/react'
 
 import { userEditSchema } from '@/modules/admin/schemas/user-schema'
-import UserChangePasswordDialog from '@/modules/admin/users/change-pasword-dialog'
-import { DniQueryForm } from '@/modules/admin/users/fetch-dni-form'
-import { FetchDniDialog } from '@/modules/admin/users/fetch-dni-dialog'
+import UserChangePasswordDialog from '@/modules/admin/users/change-password/change-pasword-dialog'
+import { DniQueryForm } from '@/modules/admin/users/verify-dni/fetch-dni-form'
+import { FetchDniDialog } from '@/modules/admin/users/verify-dni/fetch-dni-dialog'
 import { Button } from '@/modules/shared/components/ui/button'
 import { Input } from '@/modules/shared/components/ui/input'
 import { User } from '@/modules/admin/types/users.types'
@@ -22,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
+  CardDescription,
 } from '@/modules/shared/components/ui/card'
 import {
   Select,
@@ -34,6 +36,7 @@ import { BACKEND_URL } from '@/lib/constants'
 import { useSendRequest } from '@/modules/shared/hooks/use-send-request'
 import { useGetData } from '@/modules/shared/hooks/use-get-data'
 import { Switch } from '@/modules/shared/components/ui/switch'
+import { ACCESS_MODULES } from '@/config/links'
 
 type ReniecData = {
   name: string
@@ -44,9 +47,10 @@ type Props = {
   params: Promise<{ id: string }>
 }
 
-type UserEditFormValues = z.infer<typeof userEditSchema>
+type EditUserSchemaType = z.infer<typeof userEditSchema>
 
 export default function Page({ params }: Props) {
+  const { data: session } = useSession()
   const { id } = use(params)
   const { push } = useRouter()
   const [reniecData, setReniecData] = useState<ReniecData>()
@@ -58,11 +62,12 @@ export default function Page({ params }: Props) {
     data: user,
     error: getError,
     loading: getLoading,
-  } = useGetData<User>(url)
+  } = useGetData<User>(url, session?.tokens.access)
 
   const { sendRequest, loading: putLoading } = useSendRequest<User>(
     `${BACKEND_URL}/users/${id}/update-user`,
     'PATCH',
+    session?.tokens.access,
   )
 
   const {
@@ -73,7 +78,7 @@ export default function Page({ params }: Props) {
     setValue,
     handleSubmit,
     formState: { errors },
-  } = useForm<UserEditFormValues>({
+  } = useForm<EditUserSchemaType>({
     resolver: zodResolver(userEditSchema),
   })
 
@@ -97,7 +102,7 @@ export default function Page({ params }: Props) {
     }
   }, [user, reset])
 
-  const onSubmit: SubmitHandler<UserEditFormValues> = async (data) => {
+  const onSubmit: SubmitHandler<EditUserSchemaType> = async (data) => {
     if (!user) {
       toast.warning('Error al obtener el usuario')
       return
@@ -108,7 +113,12 @@ export default function Page({ params }: Props) {
       return
     }
 
-    const { error } = await sendRequest(data)
+    const payload = {
+      ...data,
+      modules_access: data.role === 'ADMIN' ? data.modules_access : undefined,
+    }
+
+    const { error } = await sendRequest(payload)
 
     if (error) {
       toast.error(error)
@@ -122,7 +132,7 @@ export default function Page({ params }: Props) {
   if (getError) toast.error(getError)
 
   const isActive = watch('is_active')
-
+  const role = watch('role')
   return (
     <>
       <section className="max-w-screen-xl w-full mx-auto flex items-center justify-start gap-5">
@@ -131,10 +141,8 @@ export default function Page({ params }: Props) {
             <MdOutlineChevronLeft size={25} />
           </Link>
         </Button>
-        <span className="flex-center gap-2 max-md:flex-col">
-          <h1 className="text-3xl">Editar Usuario</h1>
-          <UserChangePasswordDialog id={id} />
-        </span>
+
+        <h1 className="text-3xl">Editar Usuario</h1>
       </section>
 
       <form
@@ -245,6 +253,63 @@ export default function Page({ params }: Props) {
               )}
             </CardContent>
           </Card>
+          {role === 'ADMIN' && (
+            <Controller
+              name="modules_access"
+              control={control}
+              defaultValue={[]}
+              rules={{
+                validate: (value) =>
+                  (value?.length ?? 0) > 0 || 'Selecciona al menos un módulo',
+              }}
+              render={({ field }) => {
+                const { value, onChange } = field
+
+                const togglePermission = (permission: string) => {
+                  if ((value ?? []).includes(permission)) {
+                    onChange((value ?? []).filter((p) => p !== permission))
+                  } else {
+                    onChange([...(value ?? []), permission])
+                  }
+                }
+
+                return (
+                  <Card>
+                    <CardHeader>
+                      <div className="flex-1">
+                        <CardTitle className="flex items-center gap-2">
+                          Permisos de Módulos
+                        </CardTitle>
+                        <CardDescription>
+                          Activa o desactiva el acceso a cada módulo del sistema
+                        </CardDescription>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {ACCESS_MODULES.map(({ module, title }) => (
+                        <div
+                          key={module}
+                          className="flex items-center justify-between p-4"
+                        >
+                          <div className="text-sm font-medium">{title}</div>
+                          <Switch
+                            checked={(value ?? []).includes(module)}
+                            onCheckedChange={() => togglePermission(module)}
+                          />
+                        </div>
+                      ))}
+                      {errors.modules_access && (
+                        <p className="text-red-600 text-xs mt-2">
+                          {errors.modules_access.message}
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                )
+              }}
+            />
+          )}
+          <UserChangePasswordDialog id={id} />
 
           <Button type="submit" disabled={getLoading || putLoading}>
             {getLoading || putLoading ? (
@@ -269,11 +334,12 @@ export default function Page({ params }: Props) {
   )
 }
 
-function editableValues(user: User): UserEditFormValues {
+function editableValues(user: User): EditUserSchemaType {
   return {
     dni: user.dni,
     email: user.email,
     is_active: user.is_active,
     role: user.role,
+    modules_access: user.modules_access,
   }
 }

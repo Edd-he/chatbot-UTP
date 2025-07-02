@@ -13,6 +13,7 @@ import { AiOutlineLoading } from 'react-icons/ai'
 import { useRouter } from 'next/navigation'
 import _ from 'lodash'
 import dynamic from 'next/dynamic'
+import { useSession } from 'next-auth/react'
 
 import { Switch } from '@/modules/shared/components/ui/switch'
 import { Textarea } from '@/modules/shared/components/ui/textarea'
@@ -28,34 +29,36 @@ import { Button } from '@/modules/shared/components/ui/button'
 import { documentSchema } from '@/modules/admin/schemas/documents-schema'
 import { useSendRequest } from '@/modules/shared/hooks/use-send-request'
 import { BACKEND_URL } from '@/lib/constants'
+import { useGetData } from '@/modules/shared/hooks/use-get-data'
+import { Doc } from '@/modules/admin/types/documents.types'
+
 const PdfViewer = dynamic(
   () => import('@/modules/shared/components/pdf-viewer'),
   {
     ssr: false,
   },
 )
-import { useGetData } from '@/modules/shared/hooks/use-get-data'
-import { Doc } from '@/modules/admin/types/documents.types'
-
 type Props = {
   params: Promise<{ id: string }>
 }
 
-type DocumentFormEditValues = Omit<z.infer<typeof documentSchema>, 'file'>
+type EditDocumentSchemaType = Omit<z.infer<typeof documentSchema>, 'file'>
 
 const documentEditSchema = documentSchema.omit({ file: true })
 
 export default function Page({ params }: Props) {
+  const { data: session } = useSession()
   const { id } = use(params)
   const url = `${BACKEND_URL}/documents/${id}/get-document`
   const {
     data: doc,
     error: getError,
     loading: getLoading,
-  } = useGetData<Doc>(url)
+  } = useGetData<Doc>(url, session?.tokens.access)
   const { sendRequest, loading } = useSendRequest(
     `${BACKEND_URL}/documents/${id}/update-document`,
     'PATCH',
+    session?.tokens.access,
   )
 
   const [tags, setTags] = useState<string[]>([])
@@ -72,7 +75,7 @@ export default function Page({ params }: Props) {
     setValue,
     setError,
     clearErrors,
-  } = useForm<DocumentFormEditValues>({
+  } = useForm<EditDocumentSchemaType>({
     resolver: zodResolver(documentEditSchema),
     defaultValues: {
       name: '',
@@ -120,7 +123,7 @@ export default function Page({ params }: Props) {
 
   if (getError) toast.error(getError)
 
-  async function onSubmit(data: DocumentFormEditValues) {
+  async function onSubmit(data: EditDocumentSchemaType) {
     if (!doc) {
       toast.warning('Error al obtener el documento')
       return
@@ -148,7 +151,7 @@ export default function Page({ params }: Props) {
           </Link>
         </Button>
 
-        <h1 className="text-3xl">Nuevo Documento</h1>
+        <h1 className="text-3xl">Editar Documento</h1>
       </section>
 
       <div className="flex max-xl:flex-col-reverse gap-6 xl:h-[calc(100vh-200px)]">
@@ -232,7 +235,7 @@ export default function Page({ params }: Props) {
                         >
                           {tag}
                           <IoClose
-                            className="h-4 w-4 cursor-pointer"
+                            className="size-4 cursor-pointer hover:text-red-500"
                             onClick={() => removeTag(tag)}
                           />
                         </div>
@@ -293,7 +296,7 @@ export default function Page({ params }: Props) {
   )
 }
 
-function editableValues(doc: Doc): DocumentFormEditValues {
+function editableValues(doc: Doc): EditDocumentSchemaType {
   return {
     name: doc.name,
     description: doc.description,

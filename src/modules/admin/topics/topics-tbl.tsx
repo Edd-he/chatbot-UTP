@@ -20,9 +20,12 @@ import Link from 'next/link'
 import { FiEdit } from 'react-icons/fi'
 import { RiDeleteBin6Line } from 'react-icons/ri'
 import { HiOutlineArrowsUpDown } from 'react-icons/hi2'
+import { useSession } from 'next-auth/react'
+import { useState } from 'react'
 
 import TableSkeleton from '../skelletons/table-skeleton'
 import { Topic } from '../types/topics.types'
+import { DeleteTopicDialog } from './delete-topic-dialog'
 
 import Pagination from '@/modules/shared/components/ui/pagination'
 import { BACKEND_URL } from '@/lib/constants'
@@ -44,13 +47,24 @@ type GetTopics = {
 }
 
 export default function TopicsTbl({ page, limit, status, query }: Props) {
+  const { data: session } = useSession()
   const url = `${BACKEND_URL}/topics/get-all-topics?page_size=${limit}&page=${page}&status=${status}&query=${query}`
-  const { data, error, isLoading } = useSWR<GetTopics>(url, fetcher)
 
+  const { data, error, isLoading, mutate } = useSWR<GetTopics>(
+    session ? url : null,
+    (url: string) => fetcher(url, session?.tokens.access),
+  )
+
+  const [selected, setSelected] = useState<Topic | null>(null)
+  const [open, setOpen] = useState(false)
+
+  const handleOpenChange = (value: boolean) => {
+    setOpen(value)
+  }
   const { handleSort, sortData } = useSortData<Topic>('id')
   const sortedTopics = sortData(data?.data)
 
-  if (error) toast.error('Error al cargar los tópicos')
+  if (error) toast.error(error.message)
 
   return (
     <Card x-chunk="topics-table">
@@ -161,7 +175,7 @@ export default function TopicsTbl({ page, limit, status, query }: Props) {
                   </td>
                   <td className="rounded-r-lg space-x-2">
                     <Popover>
-                      <PopoverTrigger className="p-2 rounded cursor-pointer hover:bg-background duration-200">
+                      <PopoverTrigger className="p-2 rounded hover:bg-background duration-200">
                         <MdOutlineUnfoldMore size={20} />
                       </PopoverTrigger>
                       <PopoverContent
@@ -174,7 +188,13 @@ export default function TopicsTbl({ page, limit, status, query }: Props) {
                         >
                           <FiEdit size={18} /> Editar
                         </Link>
-                        <button className="flex items-center gap-2 hover:bg-secondary p-2 rounded-sm w-full">
+                        <button
+                          onClick={() => {
+                            setSelected(topic)
+                            handleOpenChange(true)
+                          }}
+                          className="flex items-center gap-2 hover:bg-secondary p-2 rounded-sm w-full"
+                        >
                           <RiDeleteBin6Line size={18} />
                           Eliminar
                         </button>
@@ -196,6 +216,12 @@ export default function TopicsTbl({ page, limit, status, query }: Props) {
       <CardFooter>
         <Pagination totalPages={data?.totalPages ?? 1} />
       </CardFooter>
+      <DeleteTopicDialog
+        open={open}
+        topic={selected}
+        handleOpenChange={handleOpenChange}
+        handleRefresh={mutate}
+      />
     </Card>
   )
 }

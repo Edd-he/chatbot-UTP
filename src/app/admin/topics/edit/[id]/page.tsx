@@ -21,6 +21,7 @@ import { use, useEffect } from 'react'
 import _ from 'lodash'
 import { MdOutlineChevronLeft } from 'react-icons/md'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 
 import { topicSchema } from '@/modules/admin/schemas/topics-schema'
 import { useSendRequest } from '@/modules/shared/hooks/use-send-request'
@@ -32,9 +33,10 @@ type Props = {
   params: Promise<{ id: string }>
 }
 
-type TopicFormEditValues = z.infer<typeof topicSchema>
+type EditTopicSchemaType = z.infer<typeof topicSchema>
 
 export default function Page({ params }: Props) {
+  const { data: session } = useSession()
   const { id } = use(params)
   const url = `${BACKEND_URL}/topics/${id}/get-topic`
 
@@ -42,10 +44,12 @@ export default function Page({ params }: Props) {
     data: topic,
     error: getError,
     loading: getLoading,
-  } = useGetData<Topic>(url)
+  } = useGetData<Topic>(url, session?.tokens.access)
+
   const { sendRequest, loading } = useSendRequest(
     `${BACKEND_URL}/topics/${id}/update-topic`,
     'PATCH',
+    session?.tokens.access,
   )
   const { push } = useRouter()
   const {
@@ -55,7 +59,7 @@ export default function Page({ params }: Props) {
     reset,
     watch,
     setValue,
-  } = useForm<TopicFormEditValues>({
+  } = useForm<EditTopicSchemaType>({
     resolver: zodResolver(topicSchema),
     defaultValues: {
       name: '',
@@ -66,9 +70,7 @@ export default function Page({ params }: Props) {
 
   const isActive = watch('is_active')
 
-  async function onSubmit(data: TopicFormEditValues) {
-    console.warn(data)
-    console.warn(topic)
+  async function onSubmit(data: EditTopicSchemaType) {
     if (!topic) {
       toast.warning('Error al obtener el tópico')
       return
@@ -187,7 +189,7 @@ export default function Page({ params }: Props) {
   )
 }
 
-function editableValues(topic: Topic): TopicFormEditValues {
+function editableValues(topic: Topic): EditTopicSchemaType {
   return {
     name: topic.name,
     description: topic.description,

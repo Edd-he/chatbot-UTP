@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { Button } from '@/modules/shared/components/ui/button'
 import { Input } from '@/modules/shared/components/ui/input'
 import { loginSchema } from '@/modules/auth/schemas/login-schema'
+import { redirectAdmin } from '@/modules/auth/server_actions/redirect'
 
 type LoginForm = {
   email: string
@@ -26,7 +27,7 @@ export default function Page() {
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   })
-  const { push, prefetch } = useRouter()
+  const { push } = useRouter()
 
   const onSubmit: SubmitHandler<LoginForm> = async (data) => {
     setLoading(true)
@@ -41,6 +42,7 @@ export default function Page() {
           message: response?.error || 'Error en la solicitud',
         }
       }
+      toast.success('Autenticación exitosa')
     } catch (e: any) {
       console.error((e as Error).message)
       toast.error('Credenciales Inválidas')
@@ -49,20 +51,24 @@ export default function Page() {
     }
   }
 
-  useEffect(() => {
-    prefetch('/admin/monitoring')
-  }, [])
-
-  useEffect(() => {
+  const handleRedirect = async () => {
     if (session?.user?.role) {
-      const rol = session.user.role
-      if (rol === 'ADMIN') {
-        push('/admin/monitoring')
+      const role = session.user.role
+      if (role === 'ADMIN') {
+        await redirectAdmin(session.user.modules[0])
         return
       }
-      push('/')
+      if (role === 'SUPER_ADMIN') {
+        await redirectAdmin('monitoring')
+        return
+      }
     }
+  }
+
+  useEffect(() => {
+    handleRedirect()
   }, [session, push])
+
   return (
     <>
       <div className="w-full max-w-md px-5">
@@ -77,9 +83,6 @@ export default function Page() {
           <label className="flex flex-col gap-2">
             <span>Correo:</span>
             <Input id="email" className="font-normal" {...register('email')} />
-            <span className="text-xs font-normal">
-              Ejemplo de usuario: A1533148 (no digitar el @utp.edu.pe)
-            </span>
             {errors.email && (
               <p className="text-red-600 text-xs">{errors.email.message}</p>
             )}

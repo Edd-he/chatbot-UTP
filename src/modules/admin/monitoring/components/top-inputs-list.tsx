@@ -1,4 +1,4 @@
-import { InputsData } from '../actions/fetch-top-inputs'
+import { InputsData } from '../server_actions/fetch-top-inputs'
 
 type Props = {
   data: InputsData[]

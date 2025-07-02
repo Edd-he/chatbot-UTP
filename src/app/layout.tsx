@@ -6,6 +6,7 @@ import { Toaster } from 'sonner'
 
 import { META_DATA } from '@/config/metadata'
 import { NextAuthProvider } from '@/providers/session-provider'
+import { ThemeProvider } from '@/providers/theme-provider'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -25,14 +26,20 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className="bg-background custom-scrollbar">
+    <html
+      lang="es"
+      suppressHydrationWarning
+      className="bg-background custom-scrollbar"
+    >
       <body
         className={` ${geistSans.variable} ${geistMono.variable} antialiased `}
       >
-        <NextAuthProvider>
-          <div vaul-drawer-wrapper="">{children}</div>
-          <Toaster />
-        </NextAuthProvider>
+        <ThemeProvider forcedTheme="light" defaultTheme="light">
+          <NextAuthProvider>
+            <div vaul-drawer-wrapper="">{children}</div>
+            <Toaster richColors closeButton duration={3000} visibleToasts={3} />
+          </NextAuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

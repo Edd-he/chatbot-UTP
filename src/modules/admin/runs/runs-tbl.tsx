@@ -47,7 +47,7 @@ export default function RunsTbl({ page, limit, error, query }: Props) {
   const { handleSort, sortData } = useSortData<Run>('id')
   const sortedRuns = sortData(runs)
 
-  if (getError) toast.error('Error al cargar las ejecuciones.')
+  if (getError) toast.error(getError.message)
 
   return (
     <Card x-chunk="runs-table">

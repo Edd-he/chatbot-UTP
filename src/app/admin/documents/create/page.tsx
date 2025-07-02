@@ -12,6 +12,7 @@ import { MdOutlineChevronLeft } from 'react-icons/md'
 import { AiOutlineLoading } from 'react-icons/ai'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import { useSession } from 'next-auth/react'
 
 import { Switch } from '@/modules/shared/components/ui/switch'
 import { Textarea } from '@/modules/shared/components/ui/textarea'
@@ -23,10 +24,20 @@ import {
   CardContent,
   CardDescription,
 } from '@/modules/shared/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/modules/shared/components/ui/select'
 import { Button } from '@/modules/shared/components/ui/button'
 import { documentSchema } from '@/modules/admin/schemas/documents-schema'
 import { useSendRequest } from '@/modules/shared/hooks/use-send-request'
 import { BACKEND_URL } from '@/lib/constants'
+import { Topic } from '@/modules/admin/types/topics.types'
+import { useGetData } from '@/modules/shared/hooks/use-get-data'
+import { Skeleton } from '@/modules/shared/components/ui/skeleton'
 
 const PdfViewer = dynamic(
   () => import('@/modules/shared/components/pdf-viewer'),
@@ -34,13 +45,23 @@ const PdfViewer = dynamic(
     ssr: false,
   },
 )
-type DocumentFormValues = z.infer<typeof documentSchema>
+type CreateDocumentsSchemaType = z.infer<typeof documentSchema>
 
 export default function Page() {
+  const { data: session } = useSession()
+  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null)
+  const [submitUrl, setSubmitUrl] = useState<string | null>(null)
+
+  const urlTopics = `${BACKEND_URL}/topics/get-available-topics`
+  const {
+    data: topics,
+    error: errorTopics,
+    loading: loadingTopics,
+  } = useGetData<Topic[]>(urlTopics)
   const { sendRequest, loading } = useSendRequest(
-    `${BACKEND_URL}/topics/0196ea07-1baa-752d-b718-81e64dfeb817/documents/create-document`,
+    submitUrl || '',
     'POST',
-    '',
+    session?.tokens.access,
     true,
   )
 
@@ -58,7 +79,7 @@ export default function Page() {
     setValue,
     setError,
     clearErrors,
-  } = useForm<DocumentFormValues>({
+  } = useForm<CreateDocumentsSchemaType>({
     resolver: zodResolver(documentSchema),
     defaultValues: {
       name: '',
@@ -111,7 +132,11 @@ export default function Page() {
     }
   }
 
-  async function onSubmit(data: DocumentFormValues) {
+  async function onSubmit(data: CreateDocumentsSchemaType) {
+    if (!submitUrl) {
+      toast.error('Debes seleccionar un tópico.')
+      return
+    }
     const form = new FormData()
     form.append('name', data.name)
     form.append('description', data.description)
@@ -121,6 +146,7 @@ export default function Page() {
       form.append('file', currentFile)
     }
     const { error } = await sendRequest(form)
+
     if (error) {
       toast.error(error)
       return
@@ -134,8 +160,20 @@ export default function Page() {
     setTags([])
     setTagInput('')
     setPdfUrl(null)
+    setSelectedTopicId(null)
   }
 
+  useEffect(() => {
+    if (errorTopics) toast.error('Error al obtener lo tópicos disponibles')
+  }, [errorTopics])
+
+  useEffect(() => {
+    if (selectedTopicId) {
+      setSubmitUrl(
+        `${BACKEND_URL}/topics/${selectedTopicId}/documents/create-document`,
+      )
+    }
+  }, [selectedTopicId])
   return (
     <>
       <section className="w-full mx-auto flex items-center justify-start gap-5">
@@ -186,6 +224,32 @@ export default function Page() {
                   <p className="text-xs text-red-500">
                     {errors.file.message?.toString()}
                   </p>
+                )}
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="font-semibold">Tópico</span>
+                {loadingTopics ? (
+                  <div className="space-y-2">
+                    <Skeleton className="h-10 w-full rounded-md" />
+                  </div>
+                ) : (
+                  <Select
+                    value={selectedTopicId ?? ''}
+                    onValueChange={(value) => {
+                      setSelectedTopicId(value)
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar" />
+                    </SelectTrigger>
+                    <SelectContent position="popper" hideWhenDetached>
+                      {topics?.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
               </label>
 
@@ -247,7 +311,7 @@ export default function Page() {
                         >
                           {tag}
                           <IoClose
-                            className="h-4 w-4 cursor-pointer"
+                            className="size-4 cursor-pointer hover:text-red-500"
                             onClick={() => removeTag(tag)}
                           />
                         </div>

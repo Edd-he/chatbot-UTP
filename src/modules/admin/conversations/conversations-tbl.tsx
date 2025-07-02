@@ -51,7 +51,7 @@ export default function ConversationsTbl({
   const { sortData, handleSort } = useSortData<Conversation>('id')
   const sortedConversations = sortData(data?.data)
 
-  if (error) toast.error('Error al cargar las conversaciones.')
+  if (error) toast.error(error.message)
 
   return (
     <Card x-chunk="Conversations-table">

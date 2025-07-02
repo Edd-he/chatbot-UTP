@@ -7,6 +7,7 @@ declare module 'next-auth/jwt' {
       username: string
       email: string
       role: string
+      modules: string[]
     }
     tokens: {
       access: string
@@ -22,6 +23,7 @@ declare module 'next-auth' {
       username: string
       email: string
       role: string
+      modules: string[]
     }
     tokens: {
       access: string
