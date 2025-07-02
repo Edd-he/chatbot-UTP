@@ -86,8 +86,11 @@ export default function ConversationsSheet() {
             Reciente
           </span>
           <ul className="h-96 overflow-y-auto py-2 px-3 space-y-2 custom-scrollbar text-sm">
-            {[...conversations].reverse().map((conv, i) => (
-              <li key={i} className="flex ">
+            {[...conversations].reverse().map((conv) => (
+              <li
+                key={conv.id}
+                className="relative flex items-center justify-between w-full"
+              >
                 <Link
                   href={`/${conv.id}`}
                   onClick={() => setActiveIndex(conv.id)}
@@ -114,22 +117,21 @@ export default function ConversationsSheet() {
                     setOpenPopoverId(open ? conv.id : null)
                   }
                 >
-                  <Button asChild variant={'ghost'} size={'icon'}>
-                    <PopoverTrigger
-                      onClick={(e) => e.stopPropagation()}
-                      className="ml-2 p-1"
-                    >
-                      <MdOutlineUnfoldMore size={18} className="rotate-90" />
-                    </PopoverTrigger>
-                  </Button>
+                  <PopoverTrigger
+                    onClick={(e) => e.stopPropagation()}
+                    className="ml-2 p-1 hover:bg-muted rounded transition-colors"
+                  >
+                    <MdOutlineUnfoldMore size={18} className="rotate-90" />
+                  </PopoverTrigger>
                   <PopoverContent
-                    align="end"
+                    align="start"
                     className="flex flex-col gap-2 items-start text-sm p-1 max-w-26"
                   >
                     <button
                       onClick={async () => {
                         deleteConversation(conv)
                         setOpen(false)
+                        setOpenPopoverId(null)
                         await redirectChat()
                       }}
                       className="flex items-center gap-2 hover:bg-blue-light p-2 rounded-sm w-full"
