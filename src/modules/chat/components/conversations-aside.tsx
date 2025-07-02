@@ -1,21 +1,37 @@
 'use client'
 
-import { FaRegEdit } from 'react-icons/fa'
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { FaRegEdit } from 'react-icons/fa'
 import { BsChevronLeft } from 'react-icons/bs'
 import { AiOutlineLoading } from 'react-icons/ai'
+import { MdOutlineUnfoldMore } from 'react-icons/md'
+import { RiDeleteBin6Line } from 'react-icons/ri'
 
-import { useConversationStore } from '@/app/store/conversations.store'
+import redirectChat from '../server_actions/redirect'
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/modules/shared/components/ui/popover'
 import { Button } from '@/modules/shared/components/ui/button'
+import { useConversationStore } from '@/app/store/conversations.store'
 
 export default function ConversationsAside() {
   const conversations = useConversationStore((state) => state.conversations)
+  const deleteConversation = useConversationStore(
+    (state) => state.removeConversation,
+  )
 
   const pathname = usePathname()
+
   const [activeIndex, setActiveIndex] = useState('')
   const [loadingTitle, setLoadingTitle] = useState<string | null>(null)
+
+  const [isHovered, setIsHovered] = useState(false)
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
   useEffect(() => {
     const current = conversations.find((c) => `/${c.id}` === pathname)
@@ -26,25 +42,28 @@ export default function ConversationsAside() {
     const last = [...conversations]
       .reverse()
       .find((conv) => !conv.title || conv.title === '')
-
-    if (last) {
-      setLoadingTitle(last.id)
-    } else {
-      setLoadingTitle(null)
-    }
+    setLoadingTitle(last ? last.id : null)
   }, [conversations])
+
+  const isAsideOpen = isHovered || isPopoverOpen
 
   return (
     <div
-      className={
-        'group fixed top-0 left-0 w-20 hover:w-80 bg-accent hover:bg-background transform-cpu duration-200 h-screen flex flex-col items-center border-r px-3'
-      }
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={`fixed top-0 left-0 h-screen flex flex-col items-center border-r px-3 transition-all duration-200 ${
+        isAsideOpen ? 'w-80 bg-background' : 'w-20 bg-accent'
+      }`}
     >
       <div className="mt-5 mx-auto">
         <BsChevronLeft size={24} />
       </div>
 
-      <div className="relative text-sm w-full mt-10 group-hover:opacity-100 opacity-0 duration-300">
+      <div
+        className={`relative text-sm w-full mt-10 transition-opacity duration-300 ${
+          isAsideOpen ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
         <Button
           asChild
           variant={'ghost'}
@@ -70,11 +89,38 @@ export default function ConversationsAside() {
               >
                 {loadingTitle === conv.id ? (
                   <span className="flex items-center gap-2">
-                    <AiOutlineLoading className="animate-spin ease-in-out" />
+                    <AiOutlineLoading className="animate-spin" />
                     Cargando título...
                   </span>
                 ) : (
-                  conv.title || 'Sin título'
+                  <span className="flex items-center justify-between w-full">
+                    {conv.title || 'Sin título'}
+                    <Popover
+                      open={isPopoverOpen}
+                      onOpenChange={setIsPopoverOpen}
+                    >
+                      <PopoverTrigger className="rounded duration-200 rotate-90">
+                        <MdOutlineUnfoldMore size={14} />
+                      </PopoverTrigger>
+                      <PopoverContent
+                        align="end"
+                        className="flex flex-col gap-2 items-start text-sm p-1 max-w-26"
+                      >
+                        <button
+                          onClick={async () => {
+                            deleteConversation(conv)
+                            setIsHovered(false)
+                            setIsPopoverOpen(false)
+                            await redirectChat()
+                          }}
+                          className="flex items-center gap-2 hover:bg-blue-light p-2 rounded-sm w-full"
+                        >
+                          <RiDeleteBin6Line size={18} />
+                          Eliminar
+                        </button>
+                      </PopoverContent>
+                    </Popover>
+                  </span>
                 )}
               </Link>
             </li>

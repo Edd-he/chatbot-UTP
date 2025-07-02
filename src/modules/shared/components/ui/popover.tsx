@@ -12,9 +12,19 @@ function Popover({
 }
 
 function PopoverTrigger({
+  className,
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Trigger>) {
-  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
+  return (
+    <PopoverPrimitive.Trigger
+      data-slot="popover-trigger"
+      className={cn(
+        className,
+        ' ring-offset-background data-[state=open]:ring-[2px] ring-ring cursor-pointer',
+      )}
+      {...props}
+    />
+  )
 }
 
 function PopoverContent({

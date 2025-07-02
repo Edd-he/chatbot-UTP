@@ -18,14 +18,21 @@ import { BACKEND_URL } from '@/lib/constants'
 import { useConversationStore } from '@/app/store/conversations.store'
 import { Message } from '@/modules/chat/types/message.types'
 import { fetcher } from '@/lib/http/fetcher'
+import { Topic } from '@/modules/admin/types/topics.types'
+import { Card } from '@/modules/shared/components/ui/card'
 
 type Props = {
   params: Promise<{ uuid: string }>
 }
 export default function Page({ params }: Props) {
   const { uuid } = use(params)
-  const { data, error: getError } = useSWR<Message[]>(
+  const { data, error: getHistoryError } = useSWR<Message[]>(
     `${BACKEND_URL}/chat/${uuid}/get-chat-history`,
+    fetcher,
+  )
+
+  const { data: availableTopics, error: getTopicsError } = useSWR<Topic[]>(
+    `${BACKEND_URL}/topics/get-available-topics`,
     fetcher,
   )
 
@@ -40,10 +47,12 @@ export default function Page({ params }: Props) {
   const lastMessageIndexRef = useRef<number | null>(null)
 
   const [messages, setMessages] = useState<Message[]>([])
-
+  const [selectedTopic, setSelectedTopic] = useState<string | undefined>(
+    undefined,
+  )
   const {
     text,
-    error,
+    error: streamError,
     loading,
     title: newTitle,
     startStream,
@@ -62,7 +71,7 @@ export default function Page({ params }: Props) {
       return messagesUpdated
     })
 
-    startStream(input, uuid)
+    startStream(input, uuid, selectedTopic)
     newConversation({ id: uuid, title: '' })
     setInput('')
   }
@@ -93,11 +102,11 @@ export default function Page({ params }: Props) {
   }, [input])
 
   useEffect(() => {
-    if (error) {
-      toast.error(error)
+    if (streamError) {
+      toast.error(streamError)
       updateTitle(uuid, 'Error')
     }
-  }, [error])
+  }, [streamError])
 
   useEffect(() => {
     if (lastMessageIndexRef.current !== null) {
@@ -124,10 +133,42 @@ export default function Page({ params }: Props) {
     if (newTitle) updateTitle(uuid, newTitle)
   }, [newTitle])
 
-  if (getError) toast.error(getError)
+  if (getHistoryError) toast.error(getHistoryError.message)
+
+  if (getTopicsError) toast.error(getTopicsError.message)
+
   return (
     <>
       <section className="relative flex-1 flex flex-col max-w-4xl mx-auto w-full px-6 py-8">
+        <div className="flex justify-center flex-wrap gap-4 w-full max-w-4xl bg-background sticky top-15 shadow-background shadow-[0_12px_16px_-1px_rgba(0,0,0,0.08)] z-20">
+          <Card
+            key="__none"
+            className={`p-2 min-w-40 cursor-pointer transition-all duration-200 rounded-sm ${
+              !selectedTopic ? 'bg-blue-light' : 'hover:bg-accent'
+            }`}
+            onClick={() => setSelectedTopic(undefined)}
+          >
+            <div className="flex flex-col items-center text-center space-y-3">
+              <h3 className="text-sm">Sin tema</h3>
+            </div>
+          </Card>
+
+          {availableTopics?.map((topic) => (
+            <Card
+              key={topic.id}
+              className={`p-2 min-w-40 cursor-pointer transition-all duration-200  rounded-sm ${
+                selectedTopic === topic.id ? 'bg-blue-light' : 'hover:bg-accent'
+              }`}
+              onClick={() => setSelectedTopic(topic.id)}
+            >
+              <div className="flex flex-col items-center text-center space-y-3">
+                <h3 className="text-sm">{topic.name}</h3>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        <div className="mb-4 w-full max-w-sm sticky top-16 "></div>
         {messages.length === 0 && !loading && <WelcomeMessage />}
 
         <div className="flex-1 space-y-6 overflow-y-auto">

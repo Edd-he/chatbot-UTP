@@ -13,6 +13,7 @@ import { fetchRunsData } from '@/modules/admin/monitoring/server_actions/fetch-r
 import { fetchTokenssData } from '@/modules/admin/monitoring/server_actions/fetch-tokens-month'
 import TopInputsList from '@/modules/admin/monitoring/components/top-inputs-list'
 import { fetchTopInputs } from '@/modules/admin/monitoring/server_actions/fetch-top-inputs'
+import { MonitoringSocket } from '@/modules/admin/monitoring/components/monitoring-socket'
 
 export default async function Page() {
   const runs = await fetchRunsData()
@@ -58,6 +59,7 @@ export default async function Page() {
           <CardFooter>Ultimos 6 meses</CardFooter>
         </Card>
       </section>
+      <MonitoringSocket />
     </>
   )
 }

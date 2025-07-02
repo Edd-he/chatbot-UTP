@@ -47,7 +47,7 @@ export function DeleteDocumentDialog({
       toast.error(error)
       return
     }
-    toast('Document Eliminado Correctamente')
+    toast.success('Documento Eliminado Correctamente')
   }
 
   return (

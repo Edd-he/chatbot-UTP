@@ -8,7 +8,7 @@ export function useChatStreamMessage(url: string) {
   const [error, setError] = useState('')
 
   const startStream = useCallback(
-    async (message: string, conversation_id: string) => {
+    async (message: string, conversation_id: string, topic_id?: string) => {
       setText('')
       setLoading(true)
       setError('')
@@ -22,6 +22,7 @@ export function useChatStreamMessage(url: string) {
           body: JSON.stringify({
             conversation_id,
             message,
+            topic_id,
           }),
         })
 

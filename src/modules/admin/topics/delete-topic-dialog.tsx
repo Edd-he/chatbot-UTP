@@ -47,7 +47,7 @@ export function DeleteTopicDialog({
       toast.error(error)
       return
     }
-    toast('Usuario Eliminado Correctamente')
+    toast.success('Tópico Eliminado Correctamente')
   }
 
   return (
