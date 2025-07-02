@@ -17,7 +17,6 @@ type Props = {
 }
 
 type InputForm = {
-  password: string
   newPassword: string
 }
 
@@ -49,18 +48,6 @@ export default function ChangePasswordForm({ id, onSuccess }: Props) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="grid gap-2">
-        <label htmlFor="current-password">Contraseña Actual</label>
-        <Input
-          id="current-password"
-          type="password"
-          {...register('password')}
-          placeholder="********"
-        />
-        {errors.password && (
-          <p className="text-red-600 text-xs">{errors.password.message}</p>
-        )}
-      </div>
       <div className="grid gap-2">
         <label htmlFor="new-password">Nueva Contraseña</label>
         <Input
