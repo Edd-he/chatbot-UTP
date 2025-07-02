@@ -13,17 +13,17 @@ type SearchParams = {
   query?: string
   page?: string
   limit?: string
-  error?: string
+  status?: string
 }
 
 type Props = {
   searchParams: Promise<SearchParams>
 }
 export default async function Page({ searchParams }: Props) {
-  const { query, page, error, limit } = await searchParams
+  const { query, page, status, limit } = await searchParams
   const queryValue = query || ''
   const currentPage = Number(page) || 1
-  const statusValue = error || 'all'
+  const statusValue = status || 'all'
   const limitValue = Number(limit) || 10
 
   return (
