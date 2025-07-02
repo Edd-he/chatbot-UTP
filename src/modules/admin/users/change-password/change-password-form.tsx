@@ -6,6 +6,7 @@ import { Button } from '@shared/components/ui/button'
 import { Input } from '@shared/components/ui/input'
 import { toast } from 'sonner'
 import { useSession } from 'next-auth/react'
+import { z } from 'zod'
 
 import { ChangePasswordSchema } from '../../schemas/change-password-schema'
 
@@ -17,9 +18,7 @@ type Props = {
   onSuccess: () => void
 }
 
-type InputForm = {
-  newPassword: string
-}
+type ChangePasswordSchemaType = z.infer<typeof ChangePasswordSchema>
 
 export default function ChangePasswordForm({ id, onSuccess }: Props) {
   const { data: session } = useSession()
@@ -33,12 +32,12 @@ export default function ChangePasswordForm({ id, onSuccess }: Props) {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<InputForm>({
+  } = useForm<ChangePasswordSchemaType>({
     resolver: zodResolver(ChangePasswordSchema),
   })
 
-  const onSubmit: SubmitHandler<InputForm> = async (data) => {
-    const { error } = await sendRequest(data.newPassword)
+  const onSubmit: SubmitHandler<ChangePasswordSchemaType> = async (data) => {
+    const { error } = await sendRequest(data)
     if (error) {
       toast.error(error)
       return

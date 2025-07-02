@@ -135,14 +135,17 @@ export default function Page({ params }: Props) {
   const role = watch('role')
   return (
     <>
-      <section className="max-w-screen-xl w-full mx-auto flex items-center justify-start gap-5">
-        <Button asChild variant={'outline'} size={'icon'}>
-          <Link href={'/admin/users'}>
-            <MdOutlineChevronLeft size={25} />
-          </Link>
-        </Button>
+      <section className="max-w-screen-xl w-full mx-auto flex items-center justify-between gap-5 max-xs:flex-col">
+        <div className="flex-center gap-5">
+          <Button asChild variant={'outline'} size={'icon'}>
+            <Link href={'/admin/users'}>
+              <MdOutlineChevronLeft size={25} />
+            </Link>
+          </Button>
 
-        <h1 className="text-3xl">Editar Usuario</h1>
+          <h1 className="text-3xl">Editar Usuario</h1>
+        </div>
+        <UserChangePasswordDialog id={id} />
       </section>
 
       <form
@@ -309,7 +312,6 @@ export default function Page({ params }: Props) {
               }}
             />
           )}
-          <UserChangePasswordDialog id={id} />
 
           <Button type="submit" disabled={getLoading || putLoading}>
             {getLoading || putLoading ? (
