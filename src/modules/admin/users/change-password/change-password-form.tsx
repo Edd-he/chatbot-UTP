@@ -38,7 +38,7 @@ export default function ChangePasswordForm({ id, onSuccess }: Props) {
   })
 
   const onSubmit: SubmitHandler<InputForm> = async (data) => {
-    const { error } = await sendRequest(data)
+    const { error } = await sendRequest(data.newPassword)
     if (error) {
       toast.error(error)
       return
