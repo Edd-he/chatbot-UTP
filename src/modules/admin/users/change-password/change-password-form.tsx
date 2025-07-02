@@ -23,7 +23,7 @@ type InputForm = {
 
 export default function ChangePasswordForm({ id, onSuccess }: Props) {
   const { sendRequest, loading } = useSendRequest(
-    `${BACKEND_URL}/api/v1/users/${id}/change-password`,
+    `${BACKEND_URL}/users/${id}/change-password`,
     'PATCH',
   )
   const {

@@ -30,6 +30,7 @@ import {
 type Props = {
   page: number
   limit: number
+  logAction: string
 }
 
 type GetLogs = {
@@ -38,8 +39,8 @@ type GetLogs = {
   totalPages: number
 }
 
-export default function LogsTbl({ page, limit }: Props) {
-  const url = `${BACKEND_URL}/Logs/get-all-logs?page_size=${limit}&page=${page}`
+export default function LogsTbl({ page, limit, logAction }: Props) {
+  const url = `${BACKEND_URL}/Logs/get-all-logs?page_size=${limit}&page=${page}${logAction !== 'all' && `&logAction=${logAction}`}`
   const { data, error, isLoading } = useSWR<GetLogs>(url, fetcher)
   const logs = data?.data ?? []
 

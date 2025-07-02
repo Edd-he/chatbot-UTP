@@ -4,7 +4,7 @@ import { IoAddCircleOutline } from 'react-icons/io5'
 import UserTbl from '@/modules/admin/users/users-tbl'
 import { Button } from '@/modules/shared/components/ui/button'
 import {
-  SearchByName,
+  SearchByQuery,
   ToogleLimit,
   ToogleStatus,
 } from '@/modules/admin/filters'
@@ -30,7 +30,7 @@ export default async function Page({ searchParams }: Props) {
     <>
       <section className="w-full flex items-end justify-between max-sm:flex-col-reverse gap-3">
         <div className="space-y-2 max-sm:w-full">
-          <SearchByName className="sm:w-96 " />
+          <SearchByQuery className="sm:w-96 " />
           <ToogleLimit />
           <ToogleStatus />
         </div>

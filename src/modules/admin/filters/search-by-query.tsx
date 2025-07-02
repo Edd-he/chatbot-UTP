@@ -2,15 +2,15 @@
 import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 import { useDebouncedCallback } from 'use-debounce'
 import { IoSearchOutline } from 'react-icons/io5'
-import { URLSearchParams } from 'url'
 
 import { Input } from '@/modules/shared/components/ui/input'
 
 type Props = {
+  placeholder?: string
   className?: string
 }
 
-export function SearchByName({ className }: Props) {
+export function SearchByQuery({ className, placeholder }: Props) {
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const { replace } = useRouter()
@@ -32,7 +32,7 @@ export function SearchByName({ className }: Props) {
     <label className="relative flex-center ">
       <IoSearchOutline className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       <Input
-        placeholder="Busqueda"
+        placeholder={placeholder ?? 'Busqueda'}
         className={`${className} rounded-lg bg-background pl-8 w-full duration-200`}
         onChange={(e) => {
           debouncedHandleSearch(e.target.value)

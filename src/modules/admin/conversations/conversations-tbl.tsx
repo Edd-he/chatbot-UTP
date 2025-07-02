@@ -1,6 +1,7 @@
 'use client'
 import { MdOutlineUnfoldMore } from 'react-icons/md'
 import { IoMdClose } from 'react-icons/io'
+import { MdCopyAll } from 'react-icons/md'
 import {
   Card,
   CardContent,
@@ -30,8 +31,7 @@ import { Button } from '@/modules/shared/components/ui/button'
 import { fetcher } from '@/lib/http/fetcher'
 
 type Props = {
-  query: string
-  status: string
+  conversationStatus: string
   page: number
   limit: number
 }
@@ -45,10 +45,9 @@ type GetConversations = {
 export default function ConversationsTbl({
   page,
   limit,
-  status,
-  query,
+  conversationStatus,
 }: Props) {
-  const url = `${BACKEND_URL}/conversations/get-all-conversations?page_size=${limit}&page=${page}&status=${status}&query=${query}`
+  const url = `${BACKEND_URL}/conversations/get-all-conversations?page_size=${limit}&page=${page}${conversationStatus !== 'all' && `&conversationStatus=${conversationStatus}`}`
   const { data, error, isLoading, mutate } = useSWR<GetConversations>(
     url,
     fetcher,
@@ -61,7 +60,7 @@ export default function ConversationsTbl({
     setOpen(value)
   }
 
-  const { sortData, handleSort } = useSortData<Conversation>('id')
+  const { sortData, handleSort } = useSortData<Conversation>('number')
   const sortedConversations = sortData(data?.data)
 
   if (error) toast.error(error.message)
@@ -107,6 +106,15 @@ export default function ConversationsTbl({
                   variant={'ghost'}
                 >
                   <HiOutlineArrowsUpDown />
+                  Ejecuciones Totales
+                </Button>
+              </td>
+              <td className="max-xl:hidden">
+                <Button
+                  onClick={() => handleSort('total_tokens')}
+                  variant={'ghost'}
+                >
+                  <HiOutlineArrowsUpDown />
                   Tokens Totales
                 </Button>
               </td>
@@ -136,23 +144,40 @@ export default function ConversationsTbl({
                         : 'text-red-500 shadow-red-500/50'
                     }`}
                   >
-                    {conversation.status === 'ACTIVE' ? 'Activa' : 'Terminada'}
+                    {conversation.status === 'ACTIVE' ? 'Activa' : 'Cerrada'}
                   </td>
                   <td className="max-md:hidden">
                     {conversation.completed_at ?? 'Sin Terminar'}
                   </td>
+                  <td className="max-xl:hidden">{conversation.total_runs}</td>
                   <td className="max-xl:hidden">{conversation.total_tokens}</td>
                   <td className="rounded-r-lg space-x-2">
-                    {conversation.status === 'ACTIVE' ? (
-                      <>
-                        <Popover>
-                          <PopoverTrigger className="p-2 rounded hover:bg-background duration-200">
-                            <MdOutlineUnfoldMore size={20} />
-                          </PopoverTrigger>
-                          <PopoverContent
-                            align="end"
-                            className="flex flex-col gap-2 items-start text-sm p-1 max-w-40"
+                    <>
+                      <Popover>
+                        <PopoverTrigger className="p-2 rounded hover:bg-background duration-200">
+                          <MdOutlineUnfoldMore size={20} />
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="end"
+                          className="flex flex-col gap-2 items-start text-sm p-1 max-w-40"
+                        >
+                          <button
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(
+                                  conversation.id,
+                                )
+                                toast.success('ID copiado')
+                              } catch {
+                                toast.error('No se pudo copiar el ID')
+                              }
+                            }}
+                            className="flex items-center gap-2 hover:bg-secondary p-2 rounded-sm w-full"
                           >
+                            <MdCopyAll size={18} />
+                            Copiar ID
+                          </button>
+                          {conversation.status === 'ACTIVE' ? (
                             <button
                               onClick={() => {
                                 setSelected(conversation)
@@ -163,12 +188,12 @@ export default function ConversationsTbl({
                               <IoMdClose size={18} />
                               Cerrar
                             </button>
-                          </PopoverContent>
-                        </Popover>
-                      </>
-                    ) : (
-                      <></>
-                    )}
+                          ) : (
+                            <></>
+                          )}
+                        </PopoverContent>
+                      </Popover>
+                    </>
                   </td>
                 </tr>
               ))

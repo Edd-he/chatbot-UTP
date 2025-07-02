@@ -54,7 +54,7 @@ export default function RunsTbl({ page, limit, error, query }: Props) {
     setOpen(value)
   }
 
-  const { handleSort, sortData } = useSortData<Run>('id')
+  const { handleSort, sortData } = useSortData<Run>('number')
   const sortedRuns = sortData(runs)
 
   if (getError) toast.error(getError.message)

@@ -1,6 +1,6 @@
 import RunsTbl from '@/modules/admin/runs/runs-tbl'
 import {
-  SearchByName,
+  SearchByQuery,
   ToogleLimit,
   ToogleRunStatus,
 } from '@/modules/admin/filters'
@@ -26,7 +26,10 @@ export default async function Page({ searchParams }: Props) {
     <>
       <section className="w-full flex items-end justify-between max-sm:flex-col-reverse gap-3">
         <div className="space-y-2 max-sm:w-full">
-          <SearchByName className="sm:w-96 " />
+          <SearchByQuery
+            className="sm:w-96 "
+            placeholder="Buscar por id de conversacion"
+          />
           <ToogleLimit />
           <ToogleRunStatus />
         </div>
