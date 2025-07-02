@@ -115,7 +115,7 @@ export default function ConversationsSheet() {
                     setOpen(false)
                     await redirectChat()
                   }}
-                  className="ml-2 p-1 hover:bg-red-100 text-red-600 rounded transition-colors"
+                  className="ml-2 p-1 active:bg-accent rounded transition-colors"
                   title="Eliminar conversación"
                 >
                   <RiDeleteBin6Line size={18} />
