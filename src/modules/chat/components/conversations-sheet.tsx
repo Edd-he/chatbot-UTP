@@ -1,11 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-vars */
 'use client'
 import { TfiMenuAlt } from 'react-icons/tfi'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { BsChevronLeft } from 'react-icons/bs'
-import { toast } from 'sonner'
 import Link from 'next/link'
 import { FaRegEdit } from 'react-icons/fa'
 import { AiOutlineLoading } from 'react-icons/ai'
@@ -20,8 +16,6 @@ import {
 import UTP from '@/modules/shared/components/UTP'
 import { Button } from '@/modules/shared/components/ui/button'
 import { useConversationStore } from '@/app/store/conversations.store'
-import { BACKEND_URL } from '@/lib/constants'
-import { sleep } from '@/lib/utils'
 
 export default function ConversationsSheet() {
   const [open, setOpen] = useState(false)

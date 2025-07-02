@@ -124,7 +124,7 @@ export default function Page({ params }: Props) {
     if (newTitle) updateTitle(uuid, newTitle)
   }, [newTitle])
 
-  if (getError) toast.error(error)
+  if (getError) toast.error(getError)
   return (
     <>
       <section className="relative flex-1 flex flex-col max-w-4xl mx-auto w-full px-6 py-8">
