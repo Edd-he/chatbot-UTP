@@ -29,14 +29,14 @@ export function ToogleLogAction() {
 
   return (
     <Select onValueChange={handleOrder} defaultValue={currentLimit}>
-      <SelectTrigger className="max-w-40 w-full h-12">
+      <SelectTrigger className="max-w-50 w-full h-12">
         <span>Acción: </span>
         <SelectValue />
       </SelectTrigger>
       <SelectContent position="popper" sideOffset={10} hideWhenDetached>
         <SelectItem value="all">Todos</SelectItem>
-        <SelectItem value="UPDATE">Creado</SelectItem>
-        <SelectItem value="CREATE">Actualizado</SelectItem>
+        <SelectItem value="CREATE">Creado</SelectItem>
+        <SelectItem value="UPDATE">Actualizado</SelectItem>
         <SelectItem value="DELETE">Removido</SelectItem>
       </SelectContent>
     </Select>

@@ -21,7 +21,7 @@ export default async function Page({ searchParams }: Props) {
   return (
     <>
       <section className="w-full flex items-end justify-between max-sm:flex-col-reverse gap-3">
-        <div className="space-y-2 max-sm:w-full w-40">
+        <div className="space-y-2 max-sm:w-full w-50">
           <ToogleLimit />
           <ToogleLogAction />
         </div>

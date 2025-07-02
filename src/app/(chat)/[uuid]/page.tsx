@@ -21,6 +21,7 @@ import { fetcher } from '@/lib/http/fetcher'
 import { Topic } from '@/modules/admin/types/topics.types'
 import { Card } from '@/modules/shared/components/ui/card'
 import { Skeleton } from '@/modules/shared/components/ui/skeleton'
+import { FAQ_SUGGESTIONS } from '@/modules/chat/constants/faq-suggestions'
 
 type Props = {
   params: Promise<{ uuid: string }>
@@ -60,20 +61,22 @@ export default function Page({ params }: Props) {
     startStream,
   } = useChatStreamMessage(`${BACKEND_URL}/chat/send`)
 
-  const handleStartStream = () => {
-    if (!input.trim()) return
+  const handleStartStream = (customMessage?: string) => {
+    const messageToSend = customMessage ?? input
+
+    if (!messageToSend.trim()) return
 
     setMessages((prev) => {
       const messagesUpdated = [
         ...prev,
-        { sender: 'user' as 'user', text: input },
+        { sender: 'user' as 'user', text: messageToSend },
         { sender: 'model' as 'model', text: '' },
       ]
       lastMessageIndexRef.current = messagesUpdated.length - 1
       return messagesUpdated
     })
 
-    startStream(input, uuid, selectedTopic)
+    startStream(messageToSend, uuid, selectedTopic)
     newConversation({ id: uuid, title: '' })
     setInput('')
   }
@@ -175,7 +178,23 @@ export default function Page({ params }: Props) {
         </div>
 
         <div className="mb-4 w-full max-w-sm sticky top-16 "></div>
-        {messages.length === 0 && !loading && <WelcomeMessage />}
+        {messages.length === 0 && !loading && (
+          <>
+            <WelcomeMessage />
+            <div className="flex flex-center flex-wrap gap-2 w-full">
+              {FAQ_SUGGESTIONS.map((question, index) => (
+                <Button
+                  key={index}
+                  className="text-xs"
+                  variant={'ghost'}
+                  onClick={() => handleStartStream(question)}
+                >
+                  {question}
+                </Button>
+              ))}
+            </div>
+          </>
+        )}
 
         <div className="flex-1 space-y-6 overflow-y-auto">
           {messages.map((msg, index) => (
@@ -207,7 +226,7 @@ export default function Page({ params }: Props) {
               disabled={loading}
             />
             <Button
-              onClick={handleStartStream}
+              onClick={() => handleStartStream()}
               disabled={loading || !input.trim()}
             >
               <RiSendPlaneLine className="size-5" />

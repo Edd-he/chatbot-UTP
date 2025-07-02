@@ -5,18 +5,12 @@ export const documentSchema = z.object({
     .any()
     .refine((files) => files?.length > 0, 'Debes seleccionar un archivo.')
     .refine(
-      (files) => files?.[0]?.size <= 10000000,
+      (files) => files?.[0]?.size <= 10 * 1024 * 1024,
       'El archivo debe ser menor a 10MB.',
     )
     .refine(
-      (files) =>
-        [
-          'application/pdf',
-          'application/msword',
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          'text/plain',
-        ].includes(files?.[0]?.type),
-      'Solo se permiten archivos PDF, DOC, DOCX o TXT.',
+      (files) => files?.[0]?.type === 'application/pdf',
+      'Solo se permiten archivos en formato PDF.',
     ),
   name: z
     .string()

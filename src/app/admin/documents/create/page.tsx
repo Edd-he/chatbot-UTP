@@ -210,13 +210,11 @@ export default function Page() {
               className="space-y-6 text-sm"
             >
               <label className="flex flex-col gap-1">
-                <span className="font-semibold">
-                  Seleccionar Archivo: PDF, DOC, DOCX, TXT
-                </span>
+                <span className="font-semibold">Seleccionar Archivo PDF</span>
                 <Input
                   id="file"
                   type="file"
-                  accept=".pdf,.doc,.docx,.txt"
+                  accept=".pdf"
                   {...register('file')}
                   className={`cursor-pointer ${errors.file ? 'border-red-500' : ''}`}
                 />
