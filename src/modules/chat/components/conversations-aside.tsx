@@ -31,7 +31,7 @@ export default function ConversationsAside() {
   const [loadingTitle, setLoadingTitle] = useState<string | null>(null)
 
   const [isHovered, setIsHovered] = useState(false)
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+  const [openPopoverId, setOpenPopoverId] = useState<string | null>(null)
 
   useEffect(() => {
     const current = conversations.find((c) => `/${c.id}` === pathname)
@@ -45,7 +45,7 @@ export default function ConversationsAside() {
     setLoadingTitle(last ? last.id : null)
   }, [conversations])
 
-  const isAsideOpen = isHovered || isPopoverOpen
+  const isAsideOpen = isHovered || openPopoverId !== null
 
   return (
     <div
@@ -66,10 +66,10 @@ export default function ConversationsAside() {
       >
         <Button
           asChild
-          variant={'ghost'}
+          variant="ghost"
           className="flex justify-start gap-2 mx-4 p-2 text-base mb-4 truncate"
         >
-          <Link href={'/'}>
+          <Link href="/">
             <FaRegEdit className="size-5" />
             Nueva Conversación
           </Link>
@@ -77,13 +77,16 @@ export default function ConversationsAside() {
         <span className="text-start text-base px-5 flex justify-start mb-4 font-semibold truncate">
           Reciente
         </span>
-        <ul className="h-96 overflow-y-auto custom-scrollbar py-2 px-3 space-y-2 text-sm">
-          {[...conversations].reverse().map((conv, i) => (
-            <li key={i} className="flex">
+        <ul className="h-96 overflow-y-auto overflow-x-hidden custom-scrollbar py-2 px-3 space-y-2 text-sm">
+          {[...conversations].reverse().map((conv) => (
+            <li
+              key={conv.id}
+              className="relative flex items-center justify-between w-full"
+            >
               <Link
                 href={`/${conv.id}`}
                 onClick={() => setActiveIndex(conv.id)}
-                className={`cursor-pointer rounded-md transition-colors truncate max-w-64 w-full relative flex p-2 ${
+                className={`cursor-pointer rounded-md transition-colors truncate w-full flex p-2 ${
                   activeIndex === conv.id ? 'bg-blue-light' : 'hover:bg-accent'
                 }`}
               >
@@ -95,34 +98,40 @@ export default function ConversationsAside() {
                 ) : (
                   <span className="flex items-center justify-between w-full">
                     {conv.title || 'Sin título'}
-                    <Popover
-                      open={isPopoverOpen}
-                      onOpenChange={setIsPopoverOpen}
-                    >
-                      <PopoverTrigger className="rounded duration-200 rotate-90">
-                        <MdOutlineUnfoldMore size={14} />
-                      </PopoverTrigger>
-                      <PopoverContent
-                        align="end"
-                        className="flex flex-col gap-2 items-start text-sm p-1 max-w-26"
-                      >
-                        <button
-                          onClick={async () => {
-                            deleteConversation(conv)
-                            setIsHovered(false)
-                            setIsPopoverOpen(false)
-                            await redirectChat()
-                          }}
-                          className="flex items-center gap-2 hover:bg-blue-light p-2 rounded-sm w-full"
-                        >
-                          <RiDeleteBin6Line size={18} />
-                          Eliminar
-                        </button>
-                      </PopoverContent>
-                    </Popover>
                   </span>
                 )}
               </Link>
+
+              <Popover
+                open={openPopoverId === conv.id}
+                onOpenChange={(open) => setOpenPopoverId(open ? conv.id : null)}
+              >
+                <Button asChild variant={'ghost'} size={'icon'}>
+                  <PopoverTrigger
+                    onClick={(e) => e.stopPropagation()}
+                    className="ml-2 p-1"
+                  >
+                    <MdOutlineUnfoldMore size={18} className="rotate-90" />
+                  </PopoverTrigger>
+                </Button>
+                <PopoverContent
+                  align="end"
+                  className="flex flex-col gap-2 items-start text-sm p-1 max-w-26"
+                >
+                  <button
+                    onClick={async () => {
+                      deleteConversation(conv)
+                      setIsHovered(false)
+                      setOpenPopoverId(null)
+                      await redirectChat()
+                    }}
+                    className="flex items-center gap-2 hover:bg-blue-light p-2 rounded-sm w-full"
+                  >
+                    <RiDeleteBin6Line size={16} />
+                    Eliminar
+                  </button>
+                </PopoverContent>
+              </Popover>
             </li>
           ))}
         </ul>

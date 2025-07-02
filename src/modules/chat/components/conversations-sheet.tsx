@@ -5,6 +5,10 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { FaRegEdit } from 'react-icons/fa'
 import { AiOutlineLoading } from 'react-icons/ai'
+import { RiDeleteBin6Line } from 'react-icons/ri'
+import { MdOutlineUnfoldMore } from 'react-icons/md'
+
+import redirectChat from '../server_actions/redirect'
 
 import {
   Sheet,
@@ -16,11 +20,20 @@ import {
 import UTP from '@/modules/shared/components/UTP'
 import { Button } from '@/modules/shared/components/ui/button'
 import { useConversationStore } from '@/app/store/conversations.store'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/modules/shared/components/ui/popover'
 
 export default function ConversationsSheet() {
-  const [open, setOpen] = useState(false)
   const conversations = useConversationStore((state) => state.conversations)
+  const deleteConversation = useConversationStore(
+    (state) => state.removeConversation,
+  )
 
+  const [openPopoverId, setOpenPopoverId] = useState<string | null>(null)
+  const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const [activeIndex, setActiveIndex] = useState('')
   const [loadingTitle, setLoadingTitle] = useState<string | null>(null)
@@ -86,13 +99,46 @@ export default function ConversationsSheet() {
                 >
                   {loadingTitle === conv.id ? (
                     <span className="flex items-center gap-2">
-                      <AiOutlineLoading className="animate-spin ease-in-out" />
+                      <AiOutlineLoading className="animate-spin" />
                       Cargando título...
                     </span>
                   ) : (
-                    conv.title || 'Sin título'
+                    <span className="flex items-center justify-between w-full">
+                      {conv.title || 'Sin título'}
+                    </span>
                   )}
                 </Link>
+                <Popover
+                  open={openPopoverId === conv.id}
+                  onOpenChange={(open) =>
+                    setOpenPopoverId(open ? conv.id : null)
+                  }
+                >
+                  <Button asChild variant={'ghost'} size={'icon'}>
+                    <PopoverTrigger
+                      onClick={(e) => e.stopPropagation()}
+                      className="ml-2 p-1"
+                    >
+                      <MdOutlineUnfoldMore size={18} className="rotate-90" />
+                    </PopoverTrigger>
+                  </Button>
+                  <PopoverContent
+                    align="end"
+                    className="flex flex-col gap-2 items-start text-sm p-1 max-w-26"
+                  >
+                    <button
+                      onClick={async () => {
+                        deleteConversation(conv)
+                        setOpen(false)
+                        await redirectChat()
+                      }}
+                      className="flex items-center gap-2 hover:bg-blue-light p-2 rounded-sm w-full"
+                    >
+                      <RiDeleteBin6Line size={16} />
+                      Eliminar
+                    </button>
+                  </PopoverContent>
+                </Popover>
               </li>
             ))}
           </ul>

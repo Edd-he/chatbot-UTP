@@ -16,9 +16,11 @@ import {
 import { toast } from 'sonner'
 import useSWR from 'swr'
 import { HiOutlineArrowsUpDown } from 'react-icons/hi2'
+import { useState } from 'react'
 
 import TableSkeleton from '../skelletons/table-skeleton'
 import { Run } from '../types/runs.types'
+import { ViewRunDialog } from './view-run-dialog'
 
 import Pagination from '@/modules/shared/components/ui/pagination'
 import { Button } from '@/modules/shared/components/ui/button'
@@ -42,7 +44,15 @@ type GetRuns = {
 export default function RunsTbl({ page, limit, error, query }: Props) {
   const url = `${BACKEND_URL}/runs/get-all-runs?page_size=${limit}&page=${page}&error=${error}&query=${query}`
   const { data, error: getError, isLoading } = useSWR<GetRuns>(url, fetcher)
+
   const runs = data?.data ?? []
+
+  const [selected, setSelected] = useState<Run | null>(null)
+  const [open, setOpen] = useState(false)
+
+  const handleOpenChange = (value: boolean) => {
+    setOpen(value)
+  }
 
   const { handleSort, sortData } = useSortData<Run>('id')
   const sortedRuns = sortData(runs)
@@ -133,13 +143,23 @@ export default function RunsTbl({ page, limit, error, query }: Props) {
                   <td className="max-xl:hidden">{run.conversation_id}</td>
                   <td className="rounded-r-lg space-x-2">
                     <Popover>
-                      <PopoverTrigger className="p-2 rounded hover:shadow-xl hover:shadow-pressed/50 hover:bg-background duration-200">
+                      <PopoverTrigger className="p-2 rounded hover:bg-background duration-200">
                         <MdOutlineUnfoldMore size={20} />
                       </PopoverTrigger>
                       <PopoverContent
                         align="end"
                         className="flex flex-col gap-2 items-start text-sm p-1 max-w-40"
-                      ></PopoverContent>
+                      >
+                        <button
+                          onClick={() => {
+                            setSelected(run)
+                            handleOpenChange(true)
+                          }}
+                          className="flex items-center gap-2 hover:bg-secondary p-2 rounded-sm w-full"
+                        >
+                          Detalle
+                        </button>
+                      </PopoverContent>
                     </Popover>
                   </td>
                 </tr>
@@ -157,6 +177,11 @@ export default function RunsTbl({ page, limit, error, query }: Props) {
       <CardFooter>
         <Pagination totalPages={data?.totalPages ?? 1} />
       </CardFooter>
+      <ViewRunDialog
+        run={selected}
+        open={open}
+        handleOpenChange={handleOpenChange}
+      />
     </Card>
   )
 }

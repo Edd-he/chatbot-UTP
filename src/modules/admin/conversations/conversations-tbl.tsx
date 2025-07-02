@@ -1,5 +1,6 @@
 'use client'
 import { MdOutlineUnfoldMore } from 'react-icons/md'
+import { IoMdClose } from 'react-icons/io'
 import {
   Card,
   CardContent,
@@ -16,9 +17,11 @@ import {
 import { toast } from 'sonner'
 import { HiOutlineArrowsUpDown } from 'react-icons/hi2'
 import useSWR from 'swr'
+import { useState } from 'react'
 
 import TableSkeleton from '../skelletons/table-skeleton'
 import { Conversation } from '../types/conversations.types'
+import { CloseConversationDialog } from './close-conversation-dialog'
 
 import Pagination from '@/modules/shared/components/ui/pagination'
 import { BACKEND_URL } from '@/lib/constants'
@@ -46,7 +49,17 @@ export default function ConversationsTbl({
   query,
 }: Props) {
   const url = `${BACKEND_URL}/conversations/get-all-conversations?page_size=${limit}&page=${page}&status=${status}&query=${query}`
-  const { data, error, isLoading } = useSWR<GetConversations>(url, fetcher)
+  const { data, error, isLoading, mutate } = useSWR<GetConversations>(
+    url,
+    fetcher,
+  )
+
+  const [selected, setSelected] = useState<Conversation | null>(null)
+  const [open, setOpen] = useState(false)
+
+  const handleOpenChange = (value: boolean) => {
+    setOpen(value)
+  }
 
   const { sortData, handleSort } = useSortData<Conversation>('id')
   const sortedConversations = sortData(data?.data)
@@ -130,15 +143,32 @@ export default function ConversationsTbl({
                   </td>
                   <td className="max-xl:hidden">{conversation.total_tokens}</td>
                   <td className="rounded-r-lg space-x-2">
-                    <Popover>
-                      <PopoverTrigger className="p-2 rounded hover:shadow-xl hover:shadow-pressed/50 hover:bg-background duration-200">
-                        <MdOutlineUnfoldMore size={20} />
-                      </PopoverTrigger>
-                      <PopoverContent
-                        align="end"
-                        className="flex flex-col gap-2 items-start text-sm p-1 max-w-40"
-                      ></PopoverContent>
-                    </Popover>
+                    {conversation.status === 'ACTIVE' ? (
+                      <>
+                        <Popover>
+                          <PopoverTrigger className="p-2 rounded hover:bg-background duration-200">
+                            <MdOutlineUnfoldMore size={20} />
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="end"
+                            className="flex flex-col gap-2 items-start text-sm p-1 max-w-40"
+                          >
+                            <button
+                              onClick={() => {
+                                setSelected(conversation)
+                                handleOpenChange(true)
+                              }}
+                              className="flex items-center gap-2 hover:bg-secondary p-2 rounded-sm w-full"
+                            >
+                              <IoMdClose size={18} />
+                              Cerrar
+                            </button>
+                          </PopoverContent>
+                        </Popover>
+                      </>
+                    ) : (
+                      <></>
+                    )}
                   </td>
                 </tr>
               ))
@@ -155,6 +185,12 @@ export default function ConversationsTbl({
       <CardFooter>
         <Pagination totalPages={data?.totalPages ?? 1} />
       </CardFooter>
+      <CloseConversationDialog
+        open={open}
+        handleOpenChange={handleOpenChange}
+        conv={selected}
+        handleRefresh={mutate}
+      />
     </Card>
   )
 }

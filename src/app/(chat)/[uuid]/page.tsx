@@ -20,6 +20,7 @@ import { Message } from '@/modules/chat/types/message.types'
 import { fetcher } from '@/lib/http/fetcher'
 import { Topic } from '@/modules/admin/types/topics.types'
 import { Card } from '@/modules/shared/components/ui/card'
+import { Skeleton } from '@/modules/shared/components/ui/skeleton'
 
 type Props = {
   params: Promise<{ uuid: string }>
@@ -31,10 +32,11 @@ export default function Page({ params }: Props) {
     fetcher,
   )
 
-  const { data: availableTopics, error: getTopicsError } = useSWR<Topic[]>(
-    `${BACKEND_URL}/topics/get-available-topics`,
-    fetcher,
-  )
+  const {
+    data: availableTopics,
+    error: getTopicsError,
+    isLoading,
+  } = useSWR<Topic[]>(`${BACKEND_URL}/topics/get-available-topics`, fetcher)
 
   const newConversation = useConversationStore((state) => state.addConversation)
   const updateTitle = useConversationStore((state) => state.updateTitle)
@@ -141,31 +143,35 @@ export default function Page({ params }: Props) {
     <>
       <section className="relative flex-1 flex flex-col max-w-4xl mx-auto w-full px-6 py-8">
         <div className="flex justify-center flex-wrap gap-4 w-full max-w-4xl bg-background sticky top-15 shadow-background shadow-[0_12px_16px_-1px_rgba(0,0,0,0.08)] z-20">
-          <Card
-            key="__none"
-            className={`p-2 min-w-40 cursor-pointer transition-all duration-200 rounded-sm ${
-              !selectedTopic ? 'bg-blue-light' : 'hover:bg-accent'
-            }`}
-            onClick={() => setSelectedTopic(undefined)}
-          >
-            <div className="flex flex-col items-center text-center space-y-3">
-              <h3 className="text-sm">Sin tema</h3>
-            </div>
-          </Card>
+          {isLoading ? (
+            <Skeleton className="h-10 w-full" />
+          ) : (
+            <>
+              <Card
+                key="__none"
+                className={`p-1 h-10 flex-center min-w-40 cursor-pointer transition-all duration-200 rounded-sm ${
+                  !selectedTopic ? 'bg-blue-light' : 'hover:bg-accent'
+                }`}
+                onClick={() => setSelectedTopic(undefined)}
+              >
+                <h3 className="text-sm">Sin tema</h3>
+              </Card>
 
-          {availableTopics?.map((topic) => (
-            <Card
-              key={topic.id}
-              className={`p-2 min-w-40 cursor-pointer transition-all duration-200  rounded-sm ${
-                selectedTopic === topic.id ? 'bg-blue-light' : 'hover:bg-accent'
-              }`}
-              onClick={() => setSelectedTopic(topic.id)}
-            >
-              <div className="flex flex-col items-center text-center space-y-3">
-                <h3 className="text-sm">{topic.name}</h3>
-              </div>
-            </Card>
-          ))}
+              {availableTopics?.map((topic) => (
+                <Card
+                  key={topic.id}
+                  className={`p-1 h-10 flex-center min-w-40 cursor-pointer transition-all duration-200 rounded-sm ${
+                    selectedTopic === topic.id
+                      ? 'bg-blue-light'
+                      : 'hover:bg-accent'
+                  }`}
+                  onClick={() => setSelectedTopic(topic.id)}
+                >
+                  <h3 className="text-sm">{topic.name}</h3>
+                </Card>
+              ))}
+            </>
+          )}
         </div>
 
         <div className="mb-4 w-full max-w-sm sticky top-16 "></div>
